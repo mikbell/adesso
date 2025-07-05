@@ -1,0 +1,47 @@
+# Dipendenze
+/node_modules
+
+# Log di npm
+npm-debug.log*
+.npm
+
+# Variabili d'ambiente
+.env
+.env.development
+.env.production
+.env.test
+
+# Build e output temporanei
+/dist
+/build
+/tmp
+
+# File di configurazione specifici dell'OS
+.DS_Store
+Thumbs.db
+
+# Credenziali e chiavi (se non gestite altrove)
+*.pem
+*.key
+
+# Test e copertura
+/coverage
+
+# File IDE (es. VS Code, WebStorm)
+.vscode/
+.idea/
+*.iml
+
+# File di lock di yarn
+yarn-error.log
+
+# Log di sistema
+/logs
+*.log
+
+# Upload di file o dati sensibili (se presenti)
+/uploads
+/data
+
+# Cache
+.cache/
