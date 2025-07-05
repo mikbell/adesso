@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import ChatHeader from './ChatHeader';
 
-const ChatWindow = ({ seller, messages, onSendMessage }) => {
+const ChatWindow = ({ contact, messages, onSendMessage, currentUserId }) => {
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -12,13 +12,19 @@ const ChatWindow = ({ seller, messages, onSendMessage }) => {
 
     return (
         <div className="flex-1 flex flex-col bg-gray-100 h-full">
-            <ChatHeader seller={seller} />
+            <ChatHeader contact={contact} />
+
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                 {messages.map((msg, index) => (
-                    <MessageBubble key={msg.id || index} message={msg} isSender={msg.sender === 'admin'} />
+                    <MessageBubble
+                        key={msg.id || index}
+                        message={msg}
+                        isSender={msg.sender === currentUserId}
+                    />
                 ))}
                 <div ref={messagesEndRef} />
             </div>
+
             <MessageInput onSendMessage={onSendMessage} />
         </div>
     );

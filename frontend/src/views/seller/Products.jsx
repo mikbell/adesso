@@ -20,12 +20,12 @@ const Products = () => {
                 {
                     label: 'Visualizza',
                     icon: FiEye,
-                    onClick: (product) => navigate(`/admin/dashboard/products/${product.id}`),
+                    onClick: (product) => navigate(`/seller/dashboard/products/${product.id}/view`),
                 },
                 {
                     label: 'Modifica',
                     icon: FiEdit,
-                    onClick: (product) => navigate(`/admin/dashboard/products/edit/${product.id}`),
+                    onClick: (product) => navigate(`/seller/dashboard/products/${product.id}/edit`),
                 },
             ]
         },

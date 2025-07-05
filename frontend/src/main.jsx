@@ -1,27 +1,58 @@
-import React, { lazy, Suspense } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import './index.css'
-import { Provider } from 'react-redux'
-import store from './store/index'
-import { Toaster } from 'react-hot-toast'
-import Loading from './components/shared/Loading'
-const App = lazy(() => import("./App"))
+import React, { lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import './index.css';
+import { Provider } from 'react-redux';
+import store from './store/index';
+import { Toaster } from 'react-hot-toast';
+
+// Importa i nuovi componenti
+import ErrorBoundary from './components/shared/ErrorBoundary';
+import Loading from './components/shared/Loading';
+
+const App = lazy(() => import("./App"));
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <Provider store={store}>
-      <Suspense fallback={<Loading />}>
-        <App />
-        <Toaster
-          toastOptions={{
-            position: 'top-right',
-            style: {
-              background: '#333',
-              color: '#fff',
-            }
-          }} />
-      </Suspense>
-    </Provider>
-  </BrowserRouter>,
-)
+  <React.StrictMode>
+    <BrowserRouter>
+      <Provider store={store}>
+        <Suspense fallback={<Loading />}>
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
+
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#374151',
+                color: '#F9FAFB',
+                borderRadius: '8px',
+                padding: '16px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+              },
+              success: {
+                style: {
+                  background: '#059669',
+                },
+                iconTheme: {
+                  primary: '#F9FAFB',
+                  secondary: '#059669',
+                },
+              },
+              error: {
+                style: {
+                  background: '#DC2626',
+                },
+                iconTheme: {
+                  primary: '#F9FAFB',
+                  secondary: '#DC2626',
+                },
+              },
+            }}
+          />
+        </Suspense>
+      </Provider>
+    </BrowserRouter>
+  </React.StrictMode>
+);

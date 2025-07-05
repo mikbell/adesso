@@ -236,7 +236,38 @@ export const getStatusClasses = (statusString) => {
 	}
 };
 
-// Potresti aggiungere altre funzioni qui, come:
-// export const addSeller = async (newSeller) => { ... };
-// export const updateSeller = async (sellerId, updatedData) => { ... };
-// export const deleteSeller = async (sellerId) => { ... };
+export const fetchSellerProfile = () => {
+	const profileData = {
+		id: "seller_123",
+		name: "Maria Rossi",
+		email: "maria.rossi@store.com",
+		role: "venditore",
+		status: "Attivo",
+		division: "Lombardia",
+		district: "Milano",
+		state: "Italia",
+		avatarUrl: "https://randomuser.me/api/portraits/women/68.jpg",
+		memberSince: "2023-01-15T10:00:00Z",
+		storeName: "La Bottega di Maria",
+		storeDescription:
+			"Articoli fatti a mano e prodotti tipici locali. Passione e qualità in ogni pezzo.",
+		phone: "+39 333 1234567",
+		address: "Via Garibaldi, 10\n70122 Bari, BA\nItalia",
+		vatNumber: "IT12345678901",
+		stats: {
+			totalSales: "12,450.50",
+			productsListed: 78,
+			averageRating: 4.9,
+		},
+		settings: {
+			notifications: {
+				newOrders: true,
+				newMessages: true,
+			},
+		},
+	};
+
+	return new Promise((resolve) => {
+		setTimeout(() => resolve(profileData), 500);
+	});
+};

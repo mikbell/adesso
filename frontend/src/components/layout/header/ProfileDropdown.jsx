@@ -49,7 +49,7 @@ const ProfileDropdown = ({ user }) => {
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5">
                     <Link
-                        to="/profile"
+                        to="/seller/dashboard/profile"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
                         onClick={() => setIsOpen(false)}
                     >
@@ -57,7 +57,7 @@ const ProfileDropdown = ({ user }) => {
                         <span>Profilo</span>
                     </Link>
                     <Link
-                        to="/settings"
+                        to="/seller/dashboard/settings"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
                         onClick={() => setIsOpen(false)}
                     >

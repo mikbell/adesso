@@ -38,9 +38,8 @@ const DeactiveSellers = () => {
 
   const handleAddSeller = useCallback(() => {
     console.log('Open form to add new seller');
-    // Puoi navigare a una rotta per l'aggiunta di un nuovo venditore
-    // navigate('/admin/dashboard/sellers/new');
-  }, []);
+    navigate('/admin/dashboard/sellers/new');
+  }, [navigate]);
 
   const handleViewDetails = useCallback((sellerId) => {
     navigate(`/admin/dashboard/sellers/${sellerId}`);
@@ -75,7 +74,7 @@ const DeactiveSellers = () => {
 
   const handleEditSeller = useCallback((sellerId) => {
     console.log('Modifica venditore:', sellerId);
-    // navigate(`/admin/dashboard/sellers/${sellerId}/edit`);
+    navigate(`/admin/dashboard/sellers/${sellerId}/edit`);
   }, []);
 
   const handleDeleteSeller = useCallback((sellerId) => {

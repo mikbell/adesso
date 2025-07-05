@@ -7,6 +7,7 @@ import { PropagateLoader } from 'react-spinners';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { overrideStyle } from '../../utils/utils';
 
 const AdminLogin = () => {
 
@@ -73,14 +74,6 @@ const AdminLogin = () => {
         } catch (error) {
             console.error('Errore durante il login:', error);
         }
-    };
-
-    const overrideStyle = {
-        display: 'flex',
-        margin: '0 auto',
-        height: '24px',
-        justifyContent: 'center',
-        alignItems: 'center',
     };
 
     useEffect(() => {

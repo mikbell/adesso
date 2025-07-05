@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CustomInput from '../../components/shared/CustomInput'; // Assicurati che il percorso sia corretto
 import { Link } from 'react-router-dom';
 import Button from '../../components/shared/Button';
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { useSelector, useDispatch } from 'react-redux';
+import { overrideStyle } from '../../utils/utils';
+import { PropagateLoader } from 'react-spinners';
+import { sellerRegister, clearMessages } from '../../store/reducers/authReducer';
+import { toast } from 'react-hot-toast';
 
 const Register = () => {
+    const dispatch = useDispatch();
+
+    const { loader, successMessage, errorMessage } = useSelector((state) => state.auth);
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -69,9 +78,7 @@ const Register = () => {
             setErrors(newErrors);
         } else {
             console.log('Dati di registrazione:', formData);
-            // Qui potresti inviare i dati al tuo backend
-            alert('Registrazione effettuata con successo!');
-            // Reset del form dopo la registrazione
+            dispatch(sellerRegister(formData));
             setFormData({
                 name: '',
                 email: '',
@@ -82,6 +89,18 @@ const Register = () => {
             setErrors({}); // Resetta anche gli errori
         }
     };
+
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(clearMessages());
+        }
+
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(clearMessages());
+        }
+    }, [successMessage, errorMessage, dispatch]);
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-blue-400 to-purple-600 flex justify-center items-center p-4'>
@@ -100,7 +119,7 @@ const Register = () => {
                         type="text"
                         value={formData.name}
                         onChange={handleChange}
-                        error={errors.name}
+                        errorMessage={errors.name}
                     />
 
                     <CustomInput
@@ -111,7 +130,7 @@ const Register = () => {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        error={errors.email}
+                        errorMessage={errors.email}
                     />
 
                     <CustomInput
@@ -122,7 +141,7 @@ const Register = () => {
                         type="password"
                         value={formData.password}
                         onChange={handleChange}
-                        error={errors.password}
+                        errorMessage={errors.password}
                     />
 
                     <CustomInput
@@ -133,7 +152,7 @@ const Register = () => {
                         type="password"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        error={errors.confirmPassword}
+                        errorMessage={errors.confirmPassword}
                     />
 
                     <div className="flex items-center mb-6">
@@ -153,8 +172,8 @@ const Register = () => {
                         )}
                     </div>
 
-                    <Button type="submit" className="w-full">
-                        Registrati
+                    <Button disabled={loader ? true : false} type="submit" className='w-full'>
+                        {loader ? <PropagateLoader cssOverride={overrideStyle} size={8} color="#fff" /> : 'Registrati'}
                     </Button>
 
                     <div className="w-full flex justify-center items-center my-3">

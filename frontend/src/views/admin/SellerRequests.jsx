@@ -59,7 +59,7 @@ const SellerRequests = () => {
   }, []);
 
   const handleViewDetails = useCallback((sellerId) => {
-    navigate(`/admin/dashboard/sellers/${sellerId}`);
+    navigate(`/admin/dashboard/sellers/${sellerId}/view`);
   }, [navigate]);
 
   const handleActivateSeller = useCallback((sellerId) => {

@@ -1,7 +1,7 @@
 import router from "express";
 import {
-	login,
-	register,
+	sellerLogin,
+	sellerRegister,
 	adminLogin,
 	getUser,
 } from "../controllers/authController.js";
@@ -9,8 +9,8 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const authRouter = router();
 
-authRouter.post("/login", login);
-authRouter.post("/register", register);
+authRouter.post("/seller-login", sellerLogin);
+authRouter.post("/seller-register", sellerRegister);
 authRouter.post("/admin-login", adminLogin);
 authRouter.get("/get-user", authMiddleware, getUser);
 

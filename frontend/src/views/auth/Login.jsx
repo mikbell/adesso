@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CustomInput from '../../components/shared/CustomInput';
 import { Link } from 'react-router-dom';
 import Button from '../../components/shared/Button';
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { overrideStyle } from '../../utils/utils';
+import { useSelector, useDispatch } from 'react-redux';
+import { PropagateLoader } from 'react-spinners';
+import { toast } from 'react-hot-toast';
+import { sellerLogin, clearMessages } from '../../store/reducers/authReducer';
+
 
 const Login = () => {
+
+    const dispatch = useDispatch();
+
+    const { loader, successMessage, errorMessage } = useSelector((state) => state.auth);
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -62,22 +73,24 @@ const Login = () => {
         setLoginError('');
 
         try {
-            // Simulazione login
-            if (formData.email === 'test@example.com' && formData.password === 'password123') {
-                alert('Accesso effettuato con successo!');
-                console.log('Accesso effettuato', formData);
-                setFormData({ email: '', password: '' });
-                setErrors({});
-            } else {
-                setLoginError('Credenziali non valide. Riprova.');
-            }
+            dispatch(sellerLogin(formData));
         } catch (error) {
-            setLoginError('Errore durante il login. Riprova più tardi.');
-            console.error('Errore:', error);
-        } finally {
             setIsSubmitting(false);
+            setLoginError(error.message);
         }
     };
+
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(clearMessages());
+        }
+
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(clearMessages());
+        }
+    }, [successMessage, errorMessage, dispatch]);
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-blue-400 to-purple-600 flex justify-center items-center p-4'>
@@ -126,8 +139,8 @@ const Login = () => {
                         </Link>
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? 'Accesso in corso...' : 'Accedi'}
+                    <Button disabled={loader ? true : false} type="submit" className='w-full'>
+                        {loader ? <PropagateLoader cssOverride={overrideStyle} size={8} color="#fff" /> : 'Accedi'}
                     </Button>
 
                     <div className="w-full flex justify-center items-center my-5">

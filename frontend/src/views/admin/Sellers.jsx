@@ -30,16 +30,16 @@ const Sellers = () => {
 
     const handleAddSeller = useCallback(() => {
         console.log('Open form to add new seller');
-        // navigate('/admin/dashboard/sellers/new'); // Esempio di navigazione per aggiungere un nuovo venditore
+        navigate('/admin/dashboard/sellers/new'); // Esempio di navigazione per aggiungere un nuovo venditore
     }, []);
 
     const handleViewDetails = useCallback((sellerId) => {
-        navigate(`/admin/dashboard/sellers/${sellerId}`);
+        navigate(`/admin/dashboard/sellers/${sellerId}/view`);
     }, [navigate]);
 
     const handleEditSeller = useCallback((sellerId) => {
         console.log('Modifica venditore:', sellerId);
-        // navigate(`/admin/dashboard/sellers/${sellerId}/edit`); // Esempio di navigazione per modificare un venditore
+        navigate(`/admin/dashboard/sellers/${sellerId}/edit`); // Esempio di navigazione per modificare un venditore
     }, []);
 
     const handleDeleteSeller = useCallback((sellerId) => {

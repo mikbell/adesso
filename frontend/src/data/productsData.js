@@ -16,3 +16,47 @@ export const productsData = Array.from({ length: 25 }, (_, i) => {
 		status: statuses[i % statuses.length],
 	};
 });
+
+// ... (l'array 'productsData' esistente rimane qui)
+
+// Nuova funzione per recuperare un prodotto con dettagli aggiuntivi
+export const fetchProductById = (productId) => {
+	return new Promise((resolve, reject) => {
+		const product = productsData.find((p) => p.id === productId);
+
+		if (!product) {
+			return reject(new Error("Product not found"));
+		}
+
+		// Simula dati aggiuntivi che un'API potrebbe fornire
+		const detailedProduct = {
+			...product,
+			images: [
+				product.image, // Immagine principale
+				`https://picsum.photos/seed/${product.id}_2/400/400`,
+				`https://picsum.photos/seed/${product.id}_3/400/400`,
+				`https://picsum.photos/seed/${product.id}_4/400/400`,
+			],
+			fullDescription: `Questa è una descrizione completa e dettagliata per ${product.name}. Parla delle sue caratteristiche uniche, dei materiali di alta qualità e dei benefici per il cliente. Un testo più lungo per riempire lo spazio.`,
+			activity: [
+				{ id: 1, type: "create", user: "Maria Rossi", date: "2024-05-10" },
+				{
+					id: 2,
+					type: "update",
+					user: "Maria Rossi",
+					date: "2024-06-15",
+					details: "Prezzo modificato da €89.99 a €99.99",
+				},
+				{
+					id: 3,
+					type: "stock",
+					user: "Sistema",
+					date: "2024-07-01",
+					details: "Aggiunte 50 unità allo stock",
+				},
+			],
+		};
+
+		setTimeout(() => resolve(detailedProduct), 300);
+	});
+};
