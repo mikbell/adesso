@@ -26,7 +26,7 @@ export const sellerLogin = async (req, res) => {
 
 	// Validazione base dell'input
 	if (!email || !password) {
-		return responseReturn(res, 400, {
+		responseReturn(res, 400, {
 			error: "Email e password sono obbligatori.",
 		});
 	}
@@ -36,13 +36,13 @@ export const sellerLogin = async (req, res) => {
 
 		// Per sicurezza, si usa un messaggio di errore generico per non rivelare se un utente esiste o meno.
 		if (!seller) {
-			return responseReturn(res, 401, { error: "Credenziali non valide." });
+			responseReturn(res, 401, { error: "Credenziali non valide." });
 		}
 
 		const isMatch = await bcrypt.compare(password, seller.password);
 
 		if (!isMatch) {
-			return responseReturn(res, 401, { error: "Credenziali non valide." });
+			responseReturn(res, 401, { error: "Credenziali non valide." });
 		}
 
 		// Creazione del token con ID e ruolo per una gestione autorizzazioni più flessibile.
@@ -80,7 +80,7 @@ export const sellerRegister = async (req, res) => {
 
 	// Validazione dell'input
 	if (!name || !email || !password) {
-		return responseReturn(res, 400, {
+		responseReturn(res, 400, {
 			error: "Nome, email e password sono obbligatori.",
 		});
 	}
@@ -88,7 +88,7 @@ export const sellerRegister = async (req, res) => {
 	try {
 		const existingSeller = await Seller.findOne({ email });
 		if (existingSeller) {
-			return responseReturn(res, 409, {
+			responseReturn(res, 409, {
 				error: "Un utente con questa email esiste già.",
 			}); // 409 Conflict è più appropriato
 		}
@@ -155,13 +155,13 @@ export const adminLogin = async (req, res) => {
 		const admin = await Admin.findOne({ email }).select("+password");
 
 		if (!admin) {
-			return responseReturn(res, 401, { error: "Credenziali non valide." });
+			responseReturn(res, 401, { error: "Credenziali non valide." });
 		}
 
 		const isMatch = await bcrypt.compare(password, admin.password);
 
 		if (!isMatch) {
-			return responseReturn(res, 401, { error: "Credenziali non valide." });
+			responseReturn(res, 401, { error: "Credenziali non valide." });
 		}
 
 		const token = createToken({ id: admin._id, role: admin.role });
@@ -194,7 +194,7 @@ export const getUser = async (req, res) => {
 	const { id, role } = req;
 
 	if (!id || !role) {
-		return responseReturn(res, 401, { error: "Token non valido o mancante." });
+		responseReturn(res, 401, { error: "Token non valido o mancante." });
 	}
 
 	try {
@@ -204,22 +204,22 @@ export const getUser = async (req, res) => {
 		} else if (role === "seller") {
 			user = await Seller.findById(id);
 		} else {
-			return responseReturn(res, 400, {
+			responseReturn(res, 400, {
 				error: "Ruolo non valido specificato nel token.",
 			});
 		}
 
 		if (!user) {
-			return responseReturn(res, 404, { error: "Utente non trovato." });
+			responseReturn(res, 404, { error: "Utente non trovato." });
 		}
 
 		// Rimuoviamo la password per sicurezza, anche se non dovrebbe essere selezionata.
 		const { password, ...userInfo } = user.toObject();
 
-		return responseReturn(res, 200, { userInfo });
+		responseReturn(res, 200, { userInfo });
 	} catch (error) {
 		console.error("Errore in getUser:", error);
-		return responseReturn(res, 500, { error: "Errore interno del server." });
+		responseReturn(res, 500, { error: "Errore interno del server." });
 	}
 };
 

@@ -5,7 +5,7 @@ import {
 	adminLogin,
 	getUser,
 } from "../controllers/authController.js";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const authRouter = router();
 

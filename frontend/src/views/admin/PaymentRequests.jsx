@@ -1,7 +1,7 @@
 // src/pages/PaymentRequests.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import StandardTable from '../../components/StandardTable'; // Importa il componente Table generico
-import PaymentRequestsTableRow from '../../components/PaymentRequestsTableRow'; // Importa la riga specifica
+import StandardTable from '../../components/tables/StandardTable'; // Importa il componente Table generico
+import PaymentRequestsTableRow from '../../components/tables/PaymentRequestsTableRow';
 
 const PaymentRequests = () => {
     const [paymentRequests, setPaymentRequests] = useState([]);

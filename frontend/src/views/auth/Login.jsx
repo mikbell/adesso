@@ -1,96 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import CustomInput from '../../components/shared/CustomInput';
-import { Link } from 'react-router-dom';
-import Button from '../../components/shared/Button';
-import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { overrideStyle } from '../../utils/utils';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { PropagateLoader } from 'react-spinners';
 import { toast } from 'react-hot-toast';
+import { FaGoogle, FaFacebook } from "react-icons/fa";
+import CustomInput from '../../components/shared/CustomInput';
+import Button from '../../components/shared/Button';
 import { sellerLogin, clearMessages } from '../../store/reducers/authReducer';
 
 
 const Login = () => {
-
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const { loader, successMessage, errorMessage } = useSelector((state) => state.auth);
+    // Seleziona tutto lo stato necessario da Redux
+    const { loader, successMessage, errorMessage, userInfo } = useSelector((state) => state.auth);
 
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
-
     const [errors, setErrors] = useState({});
-    const [loginError, setLoginError] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setFormData((prev) => ({
             ...prev,
             [name]: value,
         }));
-
+        // Pulisce l'errore per il campo specifico mentre l'utente scrive
         if (errors[name]) {
-            setErrors((prevErrors) => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+            setErrors((prev) => ({ ...prev, [name]: '' }));
         }
-
-        if (loginError) setLoginError('');
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         const newErrors = {};
-        let isValid = true;
 
         if (!formData.email.trim()) {
             newErrors.email = "L'email è richiesta.";
-            isValid = false;
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = "Formato email non valido.";
-            isValid = false;
         }
-
         if (!formData.password.trim()) {
             newErrors.password = "La password è richiesta.";
-            isValid = false;
         }
 
-        setErrors(newErrors);
-
-        if (!isValid) {
-            setLoginError('');
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
-        setIsSubmitting(true);
-        setLoginError('');
-
-        try {
-            dispatch(sellerLogin(formData));
-        } catch (error) {
-            setIsSubmitting(false);
-            setLoginError(error.message);
-        }
+        // La logica di submit è ora più semplice: basta dispatchare l'azione.
+        dispatch(sellerLogin(formData));
     };
 
+    // --- EFFETTO PER LE NOTIFICHE (TOAST) ---
     useEffect(() => {
         if (successMessage) {
             toast.success(successMessage);
             dispatch(clearMessages());
         }
-
         if (errorMessage) {
             toast.error(errorMessage);
             dispatch(clearMessages());
         }
     }, [successMessage, errorMessage, dispatch]);
+
+    // --- EFFETTO PER IL REINDIRIZZAMENTO ---
+    // Questo si attiva quando `userInfo` cambia, indicando un login riuscito.
+    useEffect(() => {
+        if (userInfo && userInfo.role === 'seller') {
+            navigate('/seller/dashboard');
+        }
+    }, [userInfo, navigate]);
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-blue-400 to-purple-600 flex justify-center items-center p-4'>
@@ -101,12 +84,6 @@ const Login = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} noValidate>
-                    {loginError && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            <span className="block sm:inline">{loginError}</span>
-                        </div>
-                    )}
-
                     <CustomInput
                         label="Email"
                         id="email"
@@ -116,10 +93,7 @@ const Login = () => {
                         value={formData.email}
                         onChange={handleChange}
                         errorMessage={errors.email}
-                        aria-invalid={!!errors.email}
-                        aria-describedby={errors.email ? 'email-error' : undefined}
                     />
-
                     <CustomInput
                         label="Password"
                         id="password"
@@ -129,36 +103,30 @@ const Login = () => {
                         value={formData.password}
                         onChange={handleChange}
                         errorMessage={errors.password}
-                        aria-invalid={!!errors.password}
-                        aria-describedby={errors.password ? 'password-error' : undefined}
                     />
-
                     <div className="text-right mb-6">
                         <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
                             Hai dimenticato la password?
                         </Link>
                     </div>
-
-                    <Button disabled={loader ? true : false} type="submit" className='w-full'>
-                        {loader ? <PropagateLoader cssOverride={overrideStyle} size={8} color="#fff" /> : 'Accedi'}
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        loading={loader}
+                        disabled={loader}
+                    >
+                        {loader ? 'Accesso in corso...' : 'Accedi'}
                     </Button>
-
                     <div className="w-full flex justify-center items-center my-5">
                         <div className="w-[45%] h-[1px] bg-gray-300"></div>
                         <p className="px-2 text-gray-600 text-sm">Oppure</p>
                         <div className="w-[45%] h-[1px] bg-gray-300"></div>
                     </div>
-
                     <div className="flex justify-center items-center gap-3">
-                        <Button variant="google" size="lg">
-                            <FaGoogle />
-                        </Button>
-                        <Button variant="facebook" size="lg">
-                            <FaFacebook />
-                        </Button>
+                        <Button variant="google" size="lg"><FaGoogle /></Button>
+                        <Button variant="facebook" size="lg"><FaFacebook /></Button>
                     </div>
                 </form>
-
                 <p className="mt-6 text-center text-gray-600 text-sm">
                     Non hai un account?{' '}
                     <Link to="/register" className="text-blue-600 hover:underline">Registrati qui</Link>

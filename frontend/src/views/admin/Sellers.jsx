@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import StandardTable from '../../components/StandardTable';
-import Button from '../../components/Button';
+import StandardTable from '../../components/tables/StandardTable';
+import Button from '../../components/shared/Button';
 import { FiPlus, FiEye, FiEdit, FiTrash2 } from 'react-icons/fi';
 // Importa le funzioni e i dati dal file centralizzato
 import { fetchAllSellers, getStatusClasses } from '../../data/sellersData'; // Assicurati il percorso corretto

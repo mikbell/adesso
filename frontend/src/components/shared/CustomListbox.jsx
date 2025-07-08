@@ -7,9 +7,9 @@ import {
 } from '@headlessui/react';
 import { FiCheck, FiChevronDown } from 'react-icons/fi';
 
-const CustomListbox = ({ label, options, value, onChange }) => {
+const CustomListbox = ({ label, name, options, value, onChange }) => {
     return (
-        <Listbox value={value} onChange={onChange}>
+        <Listbox name={name} value={value} onChange={onChange}>
             {label && (
                 <span className="block text-sm font-semibold text-gray-700 mb-1">
                     {label}

@@ -3,9 +3,9 @@ import { FaEuroSign, FaUsers, FaShoppingCart } from "react-icons/fa";
 import { AiFillProduct } from "react-icons/ai";
 import Chart from 'react-apexcharts';
 import { Link } from 'react-router-dom';
-import Message from '../../components/Message'; // Assicurati che questo percorso sia corretto
-import DashboardCard from '../../components/DashboardCard'; // <-- Importa il nuovo componente
-import OrdersTable from '../../components/OrdersTable';
+import Message from '../../components/shared/Message'; // Assicurati che questo percorso sia corretto
+import DashboardCard from '../../components/shared/DashboardCard'; // <-- Importa il nuovo componente
+import OrdersTable from '../../components/tables/OrdersTable';
 
 const AdminDashboard = () => {
 

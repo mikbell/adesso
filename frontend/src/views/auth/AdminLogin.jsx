@@ -1,127 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+
 import CustomInput from '../../components/shared/CustomInput';
 import Button from '../../components/shared/Button';
-import { useDispatch, useSelector } from 'react-redux';
 import { adminLogin, clearMessages } from '../../store/reducers/authReducer';
-import { PropagateLoader } from 'react-spinners';
-import { useEffect } from 'react';
-import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import { overrideStyle } from '../../utils/utils';
 
 const AdminLogin = () => {
-
     const navigate = useNavigate();
-
     const dispatch = useDispatch();
-    const { loader, successMessage, errorMessage } = useSelector((state) => state.auth);
+
+    // Seleziona tutti i dati necessari, incluso userInfo per il redirect.
+    const { loader, successMessage, errorMessage, userInfo } = useSelector((state) => state.auth);
 
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
-
     const [errors, setErrors] = useState({});
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
+        setFormData((prev) => ({
+            ...prev,
             [name]: value,
         }));
         if (errors[name]) {
-            setErrors((prevErrors) => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+            setErrors((prev) => ({ ...prev, [name]: '' }));
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        dispatch(adminLogin(formData));
         const newErrors = {};
-        let formIsValid = true;
 
+        // 1. Esegue la validazione
         if (!formData.email.trim()) {
             newErrors.email = "L'email è richiesta.";
-            formIsValid = false;
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = "Formato email non valido.";
-            formIsValid = false;
         }
-
         if (!formData.password.trim()) {
             newErrors.password = "La password è richiesta.";
-            formIsValid = false;
         }
 
-        setErrors(newErrors);
-
-        if (!formIsValid) {
+        // 2. Se ci sono errori, li imposta e interrompe l'esecuzione.
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
-        try {
-
-            if (formData.email === 'test@example.com' && formData.password === 'password123') {
-                console.log('Accesso effettuato con successo!', formData);
-                alert('Accesso effettuato con successo!');
-                setFormData({ email: '', password: '' });
-                setErrors({});
-            }
-        } catch (error) {
-            console.error('Errore durante il login:', error);
-        }
+        // 3. Se la validazione ha successo, invia la richiesta.
+        dispatch(adminLogin(formData));
     };
 
+    // --- EFFETTO PER LE NOTIFICHE (TOAST) ---
     useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(clearMessages());
+        }
         if (errorMessage) {
             toast.error(errorMessage);
             dispatch(clearMessages());
         }
-        if (successMessage) {
-            toast.success(successMessage);
-            dispatch(clearMessages());
-            navigate('/');
+    }, [successMessage, errorMessage, dispatch]);
+
+    // --- EFFETTO PER IL REINDIRIZZAMENTO ---
+    // Si attiva quando `userInfo` cambia, indicando un login riuscito.
+    useEffect(() => {
+        if (userInfo && userInfo.role === 'admin') {
+            navigate('/admin/dashboard');
         }
-    }, [errorMessage, successMessage, dispatch, navigate]);
+    }, [userInfo, navigate]);
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-blue-400 to-purple-600 flex justify-center items-center p-4'>
             <div className='w-full max-w-md bg-white rounded-lg shadow-xl p-8'>
                 <div className='text-center mb-8'>
-                    <h2 className='text-3xl font-extrabold text-gray-800 mb-2'>Adesso.it</h2>
-                    <p className='text-gray-600 italic'>Admin Login</p>
+                    <h2 className='text-3xl font-extrabold text-gray-800 mb-2'>Pannello Admin</h2>
+                    <p className='text-gray-600 italic'>Accedi al tuo account</p>
                 </div>
-
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     <CustomInput
                         label="Email"
                         id="email"
                         name="email"
-                        placeholder="Inserisci la tua email"
                         type="email"
+                        placeholder="Inserisci la tua email"
                         value={formData.email}
                         onChange={handleChange}
-                        error={errors.email}
+                        errorMessage={errors.email}
                     />
-
                     <CustomInput
                         label="Password"
                         id="password"
                         name="password"
-                        placeholder="Inserisci la tua password"
                         type="password"
+                        placeholder="Inserisci la tua password"
                         value={formData.password}
                         onChange={handleChange}
-                        error={errors.password}
+                        errorMessage={errors.password}
                     />
-
-                    <Button disabled={loader ? true : false} type="submit" className='w-full'>
-                        {loader ? <PropagateLoader cssOverride={overrideStyle} size={8} color="#fff" /> : 'Accedi'}
-                    </Button>
+                    <div className="mt-6">
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            loading={loader}
+                            disabled={loader}
+                        >
+                            {loader ? 'Accesso in corso...' : 'Accedi'}
+                        </Button>
+                    </div>
                 </form>
             </div>
         </div>

@@ -1,19 +1,28 @@
-import { useState } from "react"
-import Router from "./router/Router"
-import PublicRoute from "./router/routes/publicRoutes"
-import { useEffect } from "react"
-import { getRoutes } from "./router/routes"
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Router from "./router/Router";
+import publicRoutes from "./router/routes/publicRoutes";
+import { getRoutes } from "./router/routes";
+import { getUserInfo } from "./store/reducers/authReducer";
 
 function App() {
-  const publicRoutePath = PublicRoute
-  const [allRoutes, setAllRoutes] = useState([...publicRoutePath])
+  const dispatch = useDispatch();
+  const { token, userInfo } = useSelector((state) => state.auth);
+  const [allRoutes, setAllRoutes] = useState([]);
 
   useEffect(() => {
-    const routes = getRoutes()
-    setAllRoutes([...allRoutes, routes])
-  }, [])
+    if (token) {
+      dispatch(getUserInfo());
+    }
+  }, [token, dispatch]);
 
-  return <Router allRoutes={allRoutes} />
+  useEffect(() => {
+    const mainRoute = getRoutes();
+    setAllRoutes([...publicRoutes, mainRoute]);
+
+  }, [userInfo]);
+
+  return <Router allRoutes={allRoutes} />;
 }
 
-export default App
+export default App;

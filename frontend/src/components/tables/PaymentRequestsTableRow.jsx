@@ -1,6 +1,6 @@
 // src/components/PaymentRequestsTableRow.jsx
 import React from 'react';
-import Button from './Button'; // Importa il tuo componente Button
+import Button from '../shared/Button'; // Importa il tuo componente Button
 
 const PaymentRequestsTableRow = ({ request, onConfirm }) => {
     // Funzione per determinare le classi di stile dello stato del pagamento

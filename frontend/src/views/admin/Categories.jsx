@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
-import CategoriesTable from "../../components/CategoriesTable";
-import CreateCategory from "../../components/CreateCategory";
-import Button from "../../components/Button";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiPlus } from 'react-icons/fi';
 
-const Categories = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+import { getCategories, clearMessages } from '../../store/reducers/categoryReducer';
+import CategoriesTable from "../../components/tables/CategoriesTable";
+import CreateCategory from "../../components/shared/CreateCategory";
+import Button from "../../components/shared/Button";
+import { toast } from 'react-hot-toast';
 
-  const handleCategoryCreationSuccess = () => {
-    console.log("Categoria creata con successo! Aggiorno la lista...");
-  };
+const Categories = () => {
+  const dispatch = useDispatch();
+  const { categories, totalCategories, loader, successMessage, errorMessage } = useSelector(state => state.category);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    dispatch(getCategories({ page: currentPage, perPage, search }));
+  }, [dispatch, currentPage, perPage, search]);
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, errorMessage, dispatch]);
 
   return (
     <div className='px-4 md:px-7 py-5'>
@@ -17,7 +38,6 @@ const Categories = () => {
         <div className="w-full px-3 mb-6 lg:mb-0">
           <div className="flex justify-between mb-4">
             <h1 className='text-2xl font-bold mb-4'>Categorie</h1>
-
             <Button
               onClick={() => setIsSidebarOpen(true)}
               variant="primary"
@@ -27,14 +47,24 @@ const Categories = () => {
               Aggiungi Nuova Categoria
             </Button>
           </div>
-          <CategoriesTable showSearch showItemsPerPage />
+          {/* Passa i dati e il loader alla tabella */}
+          <CategoriesTable
+            categories={categories}
+            totalCategories={totalCategories}
+            isLoading={loader}
+            // Passa le funzioni per gestire paginazione e ricerca
+            onPageChange={setCurrentPage}
+            onPerPageChange={setPerPage}
+            onSearch={setSearch}
+            showSearch
+            showItemsPerPage
+          />
         </div>
       </div>
 
       <CreateCategory
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        onSubmitSuccess={handleCategoryCreationSuccess}
       />
     </div>
   );

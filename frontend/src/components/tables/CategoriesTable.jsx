@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react'
 import TableHeader from './TableHeader';
 import TablePagination from './TablePagination';
 import CategoriesTableRow from './CategoriesTableRow';
-import Button from './Button';
 import { categories } from '../../data/categoriesData';
 
 const CategoriesTable = ({ showSearch, showItemsPerPage, showButton }) => {

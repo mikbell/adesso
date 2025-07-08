@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import StandardTable from '../../components/StandardTable';
-import Button from '../../components/Button';
+import StandardTable from '../../components/tables/StandardTable';
+import Button from '../../components/shared/Button';
 import { FiPlus, FiEye, FiEdit, FiTrash2, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
