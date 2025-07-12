@@ -1,33 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import clsx from 'clsx'; // Utility opzionale ma consigliata per gestire le classi
+import clsx from 'clsx';
 
 const SidebarLink = ({ nav, handleLinkClick }) => {
-    // Gestione delle classi più pulita con una funzione
+    // La funzione per le classi rimane invariata e corretta
     const getLinkClasses = ({ isActive }) => {
-        const baseClasses = [
-            'flex', 'items-center', 'p-3', 'rounded-lg', 'transition-all',
-            'duration-200', 'ease-in-out', 'transform', 'focus:outline-none',
-            'focus:ring-2', 'focus:ring-offset-2', 'focus:ring-indigo-400',
-            'focus:ring-offset-[#283046]'
-        ];
-
-        if (isActive) {
-            return clsx(
-                baseClasses,
-                'bg-indigo-600',
-                'text-white',
-                'shadow-lg'
-            );
-        }
-
         return clsx(
-            baseClasses,
-            'text-gray-300',
-            'hover:bg-gray-700/50',
-            'hover:text-white',
-            'hover:translate-x-1',
-            'active:scale-98'
+            'flex items-center p-3 rounded-lg transition-all duration-200 relative',
+            isActive
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
         );
     };
 
@@ -36,12 +18,23 @@ const SidebarLink = ({ nav, handleLinkClick }) => {
             <NavLink
                 to={nav.path}
                 onClick={handleLinkClick}
-                // `end` assicura che il link radice ("/") non rimanga attivo per le altre pagine
-                end={nav.path === '/admin/dashboard' || nav.path === '/seller/dashboard'}
                 className={getLinkClasses}
+                end
             >
-                {nav.icon && <span className="mr-3 text-xl">{nav.icon}</span>}
-                <span className="font-medium">{nav.title}</span>
+                {/* ▼▼▼ LA CORREZIONE È QUI ▼▼▼ */}
+                {/* Ora tutto il contenuto è dentro un'unica funzione */}
+                {({ isActive }) => (
+                    <>
+                        {/* 1. La barra laterale, che appare solo se il link è attivo */}
+                        {isActive && (
+                            <div className="absolute left-0 top-0 h-full w-1 bg-indigo-300 rounded-r-full animate-pulse"></div>
+                        )}
+
+                        {/* 2. L'icona e il titolo, che appaiono sempre */}
+                        {nav.icon && <span className="mr-3 text-xl">{nav.icon}</span>}
+                        <span className="font-medium">{nav.title}</span>
+                    </>
+                )}
             </NavLink>
         </li>
     );

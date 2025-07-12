@@ -1,6 +1,6 @@
 // src/components/PaymentRequestsTableRow.jsx
 import React from 'react';
-import Button from '../shared/Button'; // Importa il tuo componente Button
+import CustomButton from '../shared/CustomButton'; // Importa il tuo componente CustomButton
 
 const PaymentRequestsTableRow = ({ request, onConfirm }) => {
     // Funzione per determinare le classi di stile dello stato del pagamento
@@ -35,13 +35,13 @@ const PaymentRequestsTableRow = ({ request, onConfirm }) => {
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 {request.status === 'In attesa' ? (
-                    <Button
+                    <CustomButton
                         onClick={() => onConfirm(request.number)}
                         variant="success"
                         size="sm"
                     >
                         Conferma
-                    </Button>
+                    </CustomButton>
                 ) : (
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(request.status)}`}>
                         {request.status === 'Confermato' ? 'Già confermato' : 'Azione non disponibile'}

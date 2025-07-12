@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from '../shared/Button';
+import CustomButton from '../shared/CustomButton';
 import ToggleSwitch from '../shared/ToggleSwitch';
 import { FiMail, FiSmartphone } from 'react-icons/fi';
 
@@ -87,9 +87,9 @@ const NotificationSettings = () => {
 
             {/* Pulsante di Salvataggio */}
             <div className="flex justify-end pt-4 border-t">
-                <Button type="submit" loading={isSaving} disabled={isSaving}>
+                <CustomButton type="submit" loading={isSaving} disabled={isSaving}>
                     {isSaving ? 'Salvataggio...' : 'Salva Preferenze'}
-                </Button>
+                </CustomButton>
             </div>
         </form>
     );

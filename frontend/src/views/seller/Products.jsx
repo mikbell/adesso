@@ -1,92 +1,107 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
+// Componenti UI e Icone
 import TableHeader from '../../components/tables/TableHeader';
 import StandardTable from '../../components/tables/StandardTable';
 import TablePagination from '../../components/tables/TablePagination';
-
-import { FiEye, FiEdit, FiTrash2, FiMoreVertical } from 'react-icons/fi';
-
-import { productsData } from '../../data/productsData';
 import ActionsMenu from '../../components/shared/ActionsMenu';
+import LoadingPage from '../../components/shared/LoadingPage';
+import { FiEye, FiEdit, FiTrash2 } from 'react-icons/fi';
+import SmartPrice from '../../components/shared/SmartPrice';
+
+// Azioni Redux
+import { getProducts, deleteProduct, clearMessages } from '../../store/reducers/productSlice';
+
+// Hook per il debounce
+const useDebounce = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => { setDebouncedValue(value); }, delay);
+        return () => { clearTimeout(handler); };
+    }, [value, delay]);
+    return debouncedValue;
+};
+
 
 const Products = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const productActions = [
-        {
-            key: 'standard-actions',
-            items: [
-                {
-                    label: 'Visualizza',
-                    icon: FiEye,
-                    onClick: (product) => navigate(`/seller/dashboard/products/${product.id}/view`),
-                },
-                {
-                    label: 'Modifica',
-                    icon: FiEdit,
-                    onClick: (product) => navigate(`/seller/dashboard/products/${product.id}/edit`),
-                },
-            ]
-        },
-        {
-            key: 'destructive-actions',
-            items: [
-                {
-                    label: 'Elimina',
-                    icon: FiTrash2,
-                    onClick: (product) => {
-                        if (window.confirm('Sei sicuro?')) {
-                            setAllProducts(prev => prev.filter(p => p.id !== product.id));
-                        }
-                    },
-                    isDestructive: true
-                },
-            ]
-        }
-    ];
+    // Stato Redux
+    const { products, totalProducts, loader, successMessage, errorMessage } = useSelector(state => state.product);
 
-    const [allProducts, setAllProducts] = useState(productsData);
-    const [searchTerm, setSearchTerm] = useState('');
+    // Stato locale per UI (paginazione e ricerca)
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [searchInput, setSearchInput] = useState('');
+    const debouncedSearchTerm = useDebounce(searchInput, 500);
 
-    const filteredData = useMemo(() => {
-        if (!searchTerm) return allProducts;
-        const lowercasedSearchTerm = searchTerm.toLowerCase();
-        return allProducts.filter(item =>
-            Object.values(item).some(value =>
-                String(value).toLowerCase().includes(lowercasedSearchTerm)
-            )
-        );
-    }, [allProducts, searchTerm]);
+    // Chiamata API semplificata
+    useEffect(() => {
+        dispatch(getProducts({
+            page: currentPage,
+            perPage: itemsPerPage,
+            search: debouncedSearchTerm,
+        }));
+    }, [dispatch, currentPage, itemsPerPage, debouncedSearchTerm]);
 
-    const paginatedData = useMemo(() => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        return filteredData.slice(indexOfFirstItem, indexOfLastItem);
-    }, [filteredData, currentPage, itemsPerPage]);
+    // Gestione messaggi
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(clearMessages());
+            // Ricarica i dati dopo un'azione andata a buon fine
+            dispatch(getProducts({ page: currentPage, perPage: itemsPerPage, search: debouncedSearchTerm }));
+        }
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(clearMessages());
+        }
+    }, [successMessage, errorMessage, dispatch, currentPage, itemsPerPage, debouncedSearchTerm]);
 
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-    const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(Number(e.target.value));
-        setCurrentPage(1);
+    // Funzione per l'eliminazione
+    const handleDelete = (product) => {
+        if (window.confirm(`Sei sicuro di voler eliminare "${product.name}"?`)) {
+            dispatch(deleteProduct(product._id));
+        }
     };
 
-    const columns = [
+    // 1. SET DI AZIONI UNIFICATO
+    const productActions = [
+        { key: 'standard-actions', items: [{ label: 'Visualizza', icon: FiEye, onClick: (p) => navigate(`/seller/dashboard/products/${p._id}/view`) }, { label: 'Modifica', icon: FiEdit, onClick: (p) => navigate(`/seller/dashboard/products/${p._id}/edit`) }] },
+        { key: 'destructive-actions', items: [{ label: 'Elimina', icon: FiTrash2, onClick: handleDelete, isDestructive: true }] }
+    ];
+
+    // 2. DEFINIZIONE DELLE COLONNE CON LOGICA CONDIZIONALE
+    const columns = useMemo(() => [
         {
-            header: 'Prodotto', render: (item) => (
+            header: 'Prodotto',
+            render: (item) => (
                 <div className="flex items-center gap-3">
-                    <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover" />
+                    <img src={item.images && item.images[0] ? item.images[0].url : 'https://via.placeholder.com/40'} alt={item.name} className="w-10 h-10 rounded-md object-cover" />
                     <span className="font-medium text-gray-900">{item.name}</span>
                 </div>
             )
         },
-        { header: 'SKU', accessor: 'sku' },
-        { header: 'Categoria', accessor: 'category' },
-        { header: 'Prezzo', render: (item) => `€${item.price}` },
-        { header: 'Stock', accessor: 'stock' },
+        {
+            header: 'Prezzo',
+            render: (item) => {
+                // Se non c'è sconto, mostra solo il prezzo normale
+                if (!item.discount || item.discount === 0) {
+                    return `€${item.price.toFixed(2)}`;
+                }
+
+                // Se c'è uno sconto, mostra la vista completa
+                const discountedPrice = item.price - (item.price * item.discount / 100);
+                return (
+                    <SmartPrice product={item} hasDiscount={true} discountedPrice={discountedPrice} />
+                );
+            }
+        },
+        { header: 'Stock', render: (item) => (<span className={`font-medium ${item.stock < 10 ? 'text-red-500' : 'text-gray-700'}`}>{item.stock}</span>) },
         { header: 'Stato', accessor: 'status' },
         {
             header: 'Azioni',
@@ -95,9 +110,10 @@ const Products = () => {
                     <ActionsMenu item={product} actionGroups={productActions} />
                 </div>
             )
-
         }
-    ];
+    ], []);
+
+    if (loader && !products.length) return <LoadingPage />;
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
@@ -105,20 +121,26 @@ const Products = () => {
                 <TableHeader
                     title="Tutti i Prodotti"
                     showSearch={true}
-                    searchTerm={searchTerm}
-                    handleSearchChange={(e) => setSearchTerm(e.target.value)}
+                    searchTerm={searchInput}
+                    handleSearchChange={(e) => setSearchInput(e.target.value)}
+                    buttonText="Aggiungi Prodotto"
+                    onButtonClick={() => navigate('/seller/dashboard/products/add')}
                 />
-                <StandardTable
-                    columns={columns}
-                    data={paginatedData}
-                />
-                {totalPages > 1 && (
+                <div className="relative">
+                    {loader && (<div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-10"></div>)}
+                    <StandardTable
+                        columns={columns}
+                        data={products}
+                    />
+                </div>
+                {totalProducts > 0 && (
                     <TablePagination
                         currentPage={currentPage}
-                        totalPages={totalPages}
+                        totalPages={Math.ceil(totalProducts / itemsPerPage)}
                         onPageChange={setCurrentPage}
                         itemsPerPage={itemsPerPage}
-                        onItemsPerPageChange={handleItemsPerPageChange}
+                        onItemsPerPageChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        totalItems={totalProducts}
                     />
                 )}
             </div>

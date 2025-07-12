@@ -1,7 +1,7 @@
 // src/components/products/ProductCard.jsx
 import React from 'react';
 import { FiShoppingCart, FiStar } from 'react-icons/fi';
-import Button from '../shared/Button';
+import CustomButton from '../shared/CustomButton';
 
 const ProductCard = ({ product }) => {
     return (
@@ -23,9 +23,9 @@ const ProductCard = ({ product }) => {
                     <p className="text-2xl font-bold text-indigo-600">€{product.discountPrice.toFixed(2)}</p>
                     <p className="text-md text-gray-400 line-through">€{product.originalPrice.toFixed(2)}</p>
                 </div>
-                <Button variant="outline" size="md" className="w-full mt-4" icon={FiShoppingCart}>
+                <CustomButton variant="outline" size="md" className="w-full mt-4" icon={FiShoppingCart}>
                     Aggiungi al Carrello
-                </Button>
+                </CustomButton>
             </div>
         </div>
     );

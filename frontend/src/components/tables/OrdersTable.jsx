@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import TableHeader from './TableHeader'; // Reutilizza TableHeader
 import TablePagination from './TablePagination'; // Reutilizza TablePagination
+import CustomButton from '../shared/CustomButton';
 
 // Questo componente si occuperà solo della riga, incluso l'espansione
 // Non ha bisogno di essere exportato se usato solo qui, ma per chiarezza lo manteniamo
@@ -58,9 +58,9 @@ const OrdersTableRow = ({ order, isExpanded, onToggle, getStatusClasses, getOrde
                                 </ul>
                             )}
                             <div className="mt-4 text-right">
-                                <Link to={`/admin/dashboard/orders/${order.id}`} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                <CustomButton to={`/admin/dashboard/orders/${order.id}`} variant="link">
                                     Visualizza Ordine Completo &rarr;
-                                </Link>
+                                </CustomButton>
                             </div>
                         </div>
                     </td>

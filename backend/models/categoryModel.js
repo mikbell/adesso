@@ -6,6 +6,7 @@ const categorySchema = new Schema(
 		status: { type: String, required: true, default: "active" },
 		image: { type: String, required: true },
 		slug: { type: String, required: true, unique: true },
+		public_id: { type: String, required: true },
 	},
 	{ timestamps: true }
 );
@@ -14,5 +15,5 @@ categorySchema.index({
     name: "text",
 })
 
-const Category = model("categories", categorySchema);
+const Category = model("Category", categorySchema);
 export default Category;

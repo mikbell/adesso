@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '../../components/shared/Button';
+import CustomButton from '../../components/shared/CustomButton';
 import { useNavigate } from 'react-router-dom';
 
 const Unauthorized = () => {
@@ -16,11 +16,11 @@ const Unauthorized = () => {
       <p className="mt-2 text-lg text-gray-600">
         Non disponi delle autorizzazioni necessarie per visualizzare questa pagina.
       </p>
-      <Button
+      <CustomButton
         onClick={handleClick}
       >
         Torna Indietro
-      </Button>
+      </CustomButton>
     </div>
   );
 };

@@ -1,11 +1,10 @@
-import React from 'react';
 import { FaEuroSign, FaUsers, FaShoppingCart } from "react-icons/fa";
 import { AiFillProduct } from "react-icons/ai";
 import Chart from 'react-apexcharts';
-import { Link } from 'react-router-dom';
 import Message from '../../components/shared/Message'; // Assicurati che questo percorso sia corretto
 import DashboardCard from '../../components/shared/DashboardCard'; // <-- Importa il nuovo componente
 import OrdersTable from '../../components/tables/OrdersTable';
+import CustomButton from "../../components/shared/CustomButton";
 
 const AdminDashboard = () => {
 
@@ -255,7 +254,7 @@ const AdminDashboard = () => {
                     <div className="w-full p-4 bg-white rounded-lg shadow-md min-h-[400px] flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-800">Messaggi Recenti</h3>
-                            <Link to="/messages" className='text-sm text-indigo-600 hover:text-indigo-800 transition-colors'>Mostra Tutti</Link>
+                            <CustomButton to="/messages" variant="link">Mostra Tutti</CustomButton>
                         </div>
 
                         <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">

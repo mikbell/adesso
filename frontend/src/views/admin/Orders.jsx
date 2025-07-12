@@ -1,103 +1,110 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
-// 1. Importa i dati e i componenti riutilizzabili
-import { ordersData } from '../../data/ordersData';
+// Componenti e Utilità
 import TableHeader from '../../components/tables/TableHeader';
 import StandardTable from '../../components/tables/StandardTable';
 import TablePagination from '../../components/tables/TablePagination';
 import ActionsMenu from '../../components/shared/ActionsMenu';
 import StatusBadge from '../../components/shared/StatusBadge';
+import LoadingPage from '../../components/shared/LoadingPage';
 import { FiEye, FiTruck, FiXCircle } from 'react-icons/fi';
+
+// Azioni Redux
+import { getOrders, updateOrderStatus, clearOrderMessages } from '../../store/reducers/orderSlice';
+
+// Hook per il debounce (ottimo per la ricerca)
+const useDebounce = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+};
+
 
 const Orders = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    // 2. Stato per gestire la tabella (dati, ricerca, paginazione, filtri)
-    const [allOrders, setAllOrders] = useState(ordersData);
+    // 1. Dati e stato dal Redux Store
+    const { orders, totalOrders, loader, successMessage, errorMessage } = useSelector(state => state.order);
+
+    // 2. Stato locale per i filtri e la paginazione
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-    // Logica di filtro
-    const filteredData = useMemo(() => {
-        return allOrders
-            .filter(order => statusFilter === 'all' || order.status === statusFilter)
-            .filter(order => {
-                if (!searchTerm) return true;
-                const lowercasedSearchTerm = searchTerm.toLowerCase();
-                return (
-                    order.id.toLowerCase().includes(lowercasedSearchTerm) ||
-                    order.customerName.toLowerCase().includes(lowercasedSearchTerm)
-                );
-            });
-    }, [allOrders, searchTerm, statusFilter]);
+    // 3. Caricamento dati e gestione degli aggiornamenti
+    useEffect(() => {
+        // Dispatcha l'azione per ottenere gli ordini ogni volta che un filtro cambia
+        dispatch(getOrders({
+            page: currentPage,
+            perPage: itemsPerPage,
+            search: debouncedSearchTerm,
+            status: statusFilter,
+        }));
+    }, [currentPage, itemsPerPage, debouncedSearchTerm, statusFilter, successMessage, dispatch]);
 
-    // Logica di paginazione
-    const paginatedData = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return filteredData.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredData, currentPage, itemsPerPage]);
-
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-    // Gestori per le azioni
-    const handleViewOrder = (order) => navigate(`/admin/dashboard/orders/${order.id.replace('#', '')}`);
-    const handleCancelOrder = (order) => {
-        if (window.confirm(`Annullare l'ordine ${order.id}? Questa azione non può essere annullata.`)) {
-            setAllOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Annullato' } : o));
+    // Gestione delle notifiche (toast)
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(clearOrderMessages());
         }
-    };
-
-    // 3. Configurazione delle azioni e delle colonne per gli ordini
-    const orderActions = [
-        {
-            key: 'main',
-            items: [
-                { label: 'Vedi Dettagli', icon: FiEye, onClick: handleViewOrder },
-                { label: 'Traccia Spedizione', icon: FiTruck, onClick: (order) => alert(`Tracciamento per: ${order.id}`) },
-            ]
-        },
-        {
-            key: 'destructive',
-            items: [
-                { label: 'Annulla Ordine', icon: FiXCircle, onClick: handleCancelOrder, isDestructive: true },
-            ]
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(clearOrderMessages());
         }
-    ];
+    }, [successMessage, errorMessage, dispatch]);
 
-    const columns = [
+    // 4. Gestori delle azioni che usano Redux
+    const handleViewOrder = useCallback((orderId) => navigate(`/admin/dashboard/orders/${orderId}`), [navigate]);
+
+    const handleCancelOrder = useCallback((orderId) => {
+        if (window.confirm(`Sei sicuro di voler annullare questo ordine?`)) {
+            dispatch(updateOrderStatus({ orderId, status: 'cancelled' }));
+        }
+    }, [dispatch]);
+
+    // 5. Colonne della tabella
+    const columns = useMemo(() => [
         {
             header: 'ID Ordine', render: (item) => (
-                <a onClick={() => handleViewOrder(item)} className="font-bold text-indigo-600 hover:underline cursor-pointer">
-                    {item.id}
+                <a onClick={() => handleViewOrder(item._id)} className="font-bold text-indigo-600 hover:underline cursor-pointer">
+                    {item.orderId}
                 </a>
             )
         },
-        {
-            header: 'Cliente', render: (item) => (
-                <div>
-                    <p className="font-medium text-gray-900">{item.customerName}</p>
-                    <p className="text-sm text-gray-500">{item.customerEmail}</p>
-                </div>
-            )
-        },
-        { header: 'Data', accessor: 'date' },
-        { header: 'Totale', render: (item) => `€${item.total}` },
+        { header: 'Cliente', accessor: 'customerName' },
+        { header: 'Data', render: (item) => new Date(item.createdAt).toLocaleDateString('it-IT') },
+        { header: 'Totale', render: (item) => `€${item.totalAmount.toFixed(2)}` },
         { header: 'Stato', render: (item) => <StatusBadge status={item.status} /> },
         {
             header: 'Azioni', render: (item) => (
                 <div className="flex justify-end">
-                    <ActionsMenu item={item} actionGroups={orderActions} />
+                    <ActionsMenu item={item} actionGroups={[
+                        { key: 'main', items: [{ label: 'Vedi Dettagli', icon: FiEye, onClick: (o) => handleViewOrder(o._id) }] },
+                        { key: 'destructive', items: [{ label: 'Annulla Ordine', icon: FiXCircle, onClick: (o) => handleCancelOrder(o._id), isDestructive: true }] }
+                    ]} />
                 </div>
             )
         }
-    ];
+    ], [handleViewOrder, handleCancelOrder]);
+
+    // Mostra il caricamento solo se la tabella è completamente vuota
+    if (loader && orders.length === 0) {
+        return <LoadingPage />;
+    }
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
-            <div className="w-full p-4 bg-white rounded-lg shadow-md">
+        <div className="p-4 md:p-6">
+            <div className="w-full p-6 bg-white rounded-lg shadow-md">
                 <TableHeader
                     title="Tutti gli Ordini"
                     showSearch={true}
@@ -108,33 +115,34 @@ const Orders = () => {
                         name="status"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="bg-white border border-gray-300 rounded-lg p-2 focus:outline-none text-sm"
+                        className="bg-white border border-gray-300 rounded-lg py-2 px-3 focus:outline-none text-sm"
                     >
                         <option value="all">Tutti gli Stati</option>
-                        <option value="Consegnato">Consegnato</option>
-                        <option value="In transito">In transito</option>
-                        <option value="In attesa">In attesa</option>
-                        <option value="Annullato">Annullato</option>
+                        <option value="pending">In attesa</option>
+                        <option value="processing">In preparazione</option>
+                        <option value="shipped">Spedito</option>
+                        <option value="delivered">Consegnato</option>
+                        <option value="cancelled">Annullato</option>
                     </select>
                 </TableHeader>
 
                 <StandardTable
                     columns={columns}
-                    data={paginatedData}
+                    data={orders}
+                    loader={loader}
                 />
 
-                {totalPages > 1 && (
-                    <TablePagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        itemsPerPage={itemsPerPage}
-                        onPageChange={setCurrentPage}
-                        onItemsPerPageChange={(e) => {
-                            setItemsPerPage(Number(e.target.value));
-                            setCurrentPage(1);
-                        }}
-                    />
-                )}
+                <TablePagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalOrders / itemsPerPage)}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={totalOrders}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={(value) => {
+                        setItemsPerPage(value);
+                        setCurrentPage(1);
+                    }}
+                />
             </div>
         </div>
     );

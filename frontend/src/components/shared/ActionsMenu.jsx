@@ -1,4 +1,3 @@
-import React from 'react';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { FiMoreVertical } from 'react-icons/fi';
 

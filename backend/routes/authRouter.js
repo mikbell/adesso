@@ -1,17 +1,16 @@
-import router from "express";
+// routes/authRouter.js
+import { Router } from "express";
 import {
-	sellerLogin,
-	sellerRegister,
-	adminLogin,
-	getUser,
+	login,
+	register,
+	logout,
 } from "../controllers/authController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
 
-const authRouter = router();
+const authRouter = Router();
 
-authRouter.post("/seller-login", sellerLogin);
-authRouter.post("/seller-register", sellerRegister);
-authRouter.post("/admin-login", adminLogin);
-authRouter.get("/get-user", authMiddleware, getUser);
+// Rotte pubbliche per l'autenticazione
+authRouter.post("/login", login);
+authRouter.post("/register", register);
+authRouter.post("/logout", logout);
 
 export default authRouter;

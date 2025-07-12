@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TextInput from '../shared/CustomInput';
-import Button from '../shared/Button';
+import CustomButton from '../shared/CustomButton';
 import ToggleSwitch from '../shared/ToggleSwitch';
 
 const SecuritySettings = () => {
@@ -29,7 +29,7 @@ const SecuritySettings = () => {
                 <ToggleSwitch label="Abilita 2FA" enabled={twoFactor} onChange={setTwoFactor} />
             </div>
             <div className="flex justify-end pt-4 border-t">
-                <Button type="submit" loading={isSaving}>Salva Impostazioni di Sicurezza</Button>
+                <CustomButton type="submit" loading={isSaving}>Salva Impostazioni di Sicurezza</CustomButton>
             </div>
         </form>
     );

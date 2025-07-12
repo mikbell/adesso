@@ -6,7 +6,7 @@ import { FiArrowLeft, FiUser, FiTruck, FiCreditCard, FiPrinter, FiAlertCircle } 
 
 // ▼▼▼ AGGIORNATO L'IMPORT DEI DATI E DEI COMPONENTI ▼▼▼
 import { fetchDetailedOrderById } from '../../data/ordersData';
-import Button from "../../components/shared/Button";
+import CustomButton from "../../components/shared/CustomButton";
 import ActionsMenu from '../../components/shared/ActionsMenu';
 import StatusBadge from '../../components/shared/StatusBadge';
 import OrderTimeline from '../../components/orders/OrderTimeline';
@@ -55,9 +55,9 @@ const OrderDetails = () => {
             <div className="text-center py-20">
                 <h2 className="text-2xl font-bold text-red-500">Ordine Non Trovato</h2>
                 <p className="text-gray-600 mt-2">L'ID dell'ordine ({id}) potrebbe non essere corretto.</p>
-                <Button variant="primary" onClick={() => navigate('/admin/dashboard/orders')} className='mt-4'>
+                <CustomButton variant="primary" onClick={() => navigate('/admin/dashboard/orders')} className='mt-4'>
                     Torna a Tutti gli Ordini
-                </Button>
+                </CustomButton>
             </div>
         );
     }
@@ -66,9 +66,9 @@ const OrderDetails = () => {
         <div className="p-4 md:p-6 space-y-6">
             <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                    <Link to="/admin/dashboard/orders" className="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 mb-2">
+                    <CustomButton to="/admin/dashboard/orders" varinat="link">
                         <FiArrowLeft /><span>Torna agli ordini</span>
-                    </Link>
+                    </CustomButton>
                     <div className='flex items-center gap-4'>
                         <h1 className="text-3xl font-bold text-gray-800">Ordine {order.id}</h1>
                         <StatusBadge status={order.status} />
@@ -77,7 +77,7 @@ const OrderDetails = () => {
                 </div>
                 {/* ▼▼▼ AGGIUNTI I PULSANTI DI AZIONE ▼▼▼ */}
                 <div className="flex items-center gap-2">
-                    <Button variant="secondary" icon={FiPrinter}>Stampa Fattura</Button>
+                    <CustomButton variant="secondary" icon={FiPrinter}>Stampa Fattura</CustomButton>
                     <ActionsMenu item={order} actionGroups={headerActions} />
                 </div>
             </header>

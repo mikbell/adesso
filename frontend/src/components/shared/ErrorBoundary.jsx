@@ -1,6 +1,6 @@
 // src/components/shared/ErrorBoundary.jsx
 import React from 'react';
-import Button from './Button'; // Riutilizziamo il nostro bottone
+import CustomButton from './CustomButton'; // Riutilizziamo il nostro bottone
 import { FiAlertTriangle } from 'react-icons/fi';
 
 class ErrorBoundary extends React.Component {
@@ -30,13 +30,13 @@ class ErrorBoundary extends React.Component {
                     <p className="text-gray-600 mt-2">
                         Si è verificato un errore inaspettato. Il nostro team è stato notificato.
                     </p>
-                    <Button
+                    <CustomButton
                         onClick={() => window.location.reload()}
                         className="mt-6"
                         variant="primary"
                     >
                         Ricarica la Pagina
-                    </Button>
+                    </CustomButton>
                 </div>
             );
         }

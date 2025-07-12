@@ -1,28 +1,63 @@
-import { useState, useEffect } from "react";
+// src/App.jsx
+import { useEffect, lazy, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Router from "./router/Router";
+import { Routes, Route } from "react-router-dom";
+import { getUserProfile } from "./store/reducers/userSlice";
+
+// -> Importa i tuoi componenti e rotte...
+import LoadingPage from "./components/shared/LoadingPage";
 import publicRoutes from "./router/routes/publicRoutes";
-import { getRoutes } from "./router/routes";
-import { getUserInfo } from "./store/reducers/authReducer";
+import privateRoutes from "./router/routes/privateRoutes";
+import ProtectedRoute from "./router/ProtectedRoute";
+import PublicRoute from "./router/PublicRoute";
+
+const MainLayout = lazy(() => import('./layout/MainLayout.jsx'));
 
 function App() {
   const dispatch = useDispatch();
-  const { token, userInfo } = useSelector((state) => state.auth);
-  const [allRoutes, setAllRoutes] = useState([]);
+  // -> Seleziona il nuovo stato e userInfo
+  const { authStatus, userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (token) {
-      dispatch(getUserInfo());
+    // -> Esegui il controllo solo una volta, all'avvio dell'app
+    if (authStatus === 'idle') {
+      dispatch(getUserProfile());
     }
-  }, [token, dispatch]);
+  }, [authStatus, dispatch]);
 
-  useEffect(() => {
-    const mainRoute = getRoutes();
-    setAllRoutes([...publicRoutes, mainRoute]);
+  // ▼▼▼ LA LOGICA CHIAVE ▼▼▼
+  // Se stiamo ancora verificando l'autenticazione, mostra una schermata di caricamento globale.
+  // Questo impedisce al router di attivarsi prematuramente.
+  if (authStatus === 'loading' || authStatus === 'idle') {
+    return <LoadingPage />;
+  }
 
-  }, [userInfo]);
+  // Una volta che il controllo è finito, renderizza l'app.
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <Routes>
+        {/* Rotte Pubbliche */}
+        {publicRoutes.map((route, index) => (
+          <Route
+            key={index}
+            path={route.path}
+            element={<PublicRoute>{route.element}</PublicRoute>}
+          />
+        ))}
 
-  return <Router allRoutes={allRoutes} />;
+        {/* Rotte Private */}
+        <Route path="/" element={<ProtectedRoute roles={['admin', 'seller']}><MainLayout /></ProtectedRoute>}>
+          {privateRoutes.map((route, index) => (
+            <Route
+              key={index}
+              path={route.path}
+              element={<ProtectedRoute route={route}>{route.element}</ProtectedRoute>}
+            />
+          ))}
+        </Route>
+      </Routes>
+    </Suspense>
+  );
 }
 
 export default App;

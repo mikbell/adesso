@@ -6,31 +6,13 @@ import Sidebar from '../components/layout/sidebar/Sidebar';
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Dati utente centralizzati
-  const [currentUser] = useState({
-    name: 'Maria Rossi',
-    role: 'seller',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg',
-  });
-
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <Header
-        user={currentUser}
-        setShowSidebar={setShowSidebar}
-      />
-
+    <div className="bg-gray-100 min-h-screen text-gray-800">
+      <Header setShowSidebar={setShowSidebar} />
       <div className="flex">
-        <Sidebar
-          showSidebar={showSidebar}
-          setShowSidebar={setShowSidebar}
-          userRole={currentUser.role}
-        />
-
-        {/* Contenitore del contenuto principale */}
+        <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
         <div className="w-full transition-all duration-300 ease-in-out">
-
-          <main className="p-4 sm:p-6 pt-20">
+          <main className="p-4 sm:p-6 mt-[65px]">
             <Outlet />
           </main>
         </div>

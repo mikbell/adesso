@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { getNavs } from '../../../navigation/navigation'; // Assicurati che il percorso sia corretto
-import { logout } from '../../../store/reducers/authReducer'; // Importa l'azione di logout
-import SidebarLink from './SidebarLink'; // Componente per il singolo link
+import { getNavs } from '../../../navigation/navigation';
+import { logout } from '../../../store/reducers/authSlice';
+import SidebarLink from './SidebarLink';
 import { MdLogout } from "react-icons/md";
+import ProfileInfo from './ProfileInfo';
 
 // Rimuoviamo `userRole` dalle props, il componente ora ottiene i dati da Redux.
 const Sidebar = ({ showSidebar, setShowSidebar }) => {
@@ -12,21 +13,21 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
-    // Otteniamo l'intero oggetto userInfo dallo stato di Redux.
+    // Otteniamo l'intero oggetto profile dallo stato di Redux.
     // È la nostra unica fonte di verità.
-    const { userInfo } = useSelector((state) => state.auth);
+    const { userInfo: profile } = useSelector(state => state.auth);
 
     const [allNav, setAllNav] = useState([]);
 
-    // Effetto per caricare i link di navigazione quando userInfo cambia.
+    // Effetto per caricare i link di navigazione quando profile cambia.
     useEffect(() => {
         // Procediamo solo se abbiamo le informazioni dell'utente.
-        if (userInfo) {
+        if (profile) {
             // Usiamo sia il ruolo che lo stato per ottenere i link corretti.
-            const navs = getNavs(userInfo.role, userInfo.status);
+            const navs = getNavs(profile.role, profile.status);
             setAllNav(navs);
         }
-    }, [userInfo]); // La dipendenza è userInfo, quindi si aggiorna al login/logout.
+    }, [profile]); // La dipendenza è profile, quindi si aggiorna al login/logout.
 
     // Chiude la sidebar su schermi piccoli dopo un click su un link.
     const handleLinkClick = useCallback(() => {
@@ -42,7 +43,7 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
     };
 
     const sidebarClasses = `
-    fixed top-0 left-0 h-screen w-[260px] 
+    fixed top-0 left-0 min-h-screen w-[260px] 
     bg-[#283046] text-white
     flex flex-col
     transition-transform duration-300 ease-in-out z-50
@@ -62,21 +63,18 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
 
             {/* Sidebar */}
             <aside className={sidebarClasses}>
-                {/* 1. Intestazione (Logo) */}
-                <div className="flex flex-col justify-center items-center h-[100px] flex-shrink-0">
-                    <Link to='/' className="text-center" onClick={handleLinkClick}>
-                        <h2 className="text-white text-3xl font-bold tracking-wider">Adesso</h2>
-                        {userInfo && (
-                            <span className="text-gray-400 text-[10px] tracking-widest uppercase">
-                                Pannello {userInfo.role}
-                            </span>
-                        )}
-                    </Link>
-                    <div className="w-3/4 h-px bg-gray-600 mt-3"></div>
-                </div>
 
+                {
+                    profile.role === "seller"
+                        ? <ProfileInfo profile={profile} handleLinkClick={handleLinkClick} />
+                        :
+                        <h1 className='text-center font-semibold text-3xl mt-5'>
+                            Admin
+                        </h1>
+
+                }
                 {/* 2. Navigazione Principale */}
-                <nav className="flex-grow overflow-y-auto px-4 pb-4">
+                <nav className="flex-grow overflow-y-auto px-4 py-4">
                     <ul>
                         {allNav.map((nav) => (
                             <SidebarLink

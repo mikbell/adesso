@@ -1,6 +1,5 @@
 // src/components/OrdersTableRow.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
+import CustomButton from '../shared/CustomButton';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const OrdersTableRow = ({ order, isExpanded, onToggle, getStatusClasses, getOrderProducts }) => {
@@ -60,9 +59,9 @@ const OrdersTableRow = ({ order, isExpanded, onToggle, getStatusClasses, getOrde
                             )}
 
                             <div className="mt-4 text-right">
-                                <Link to={`/orders/${order.id}`} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                <CustomButton to={`/orders/${order.id}`} variant="link">
                                     Visualizza Ordine Completo &rarr;
-                                </Link>
+                                </CustomButton>
                             </div>
                         </div>
                     </td>

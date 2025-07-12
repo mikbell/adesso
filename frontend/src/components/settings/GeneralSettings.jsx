@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TextInput from '../shared/CustomInput'; // Il nostro input riutilizzabile
-import Button from '../shared/Button';
+import CustomButton from '../shared/CustomButton';
 
 const GeneralSettings = () => {
     const [settings, setSettings] = useState({
@@ -46,7 +46,7 @@ const GeneralSettings = () => {
                 </select>
             </div>
             <div className="flex justify-end pt-4 border-t">
-                <Button type="submit" loading={isSaving}>Salva Modifiche</Button>
+                <CustomButton type="submit" loading={isSaving}>Salva Modifiche</CustomButton>
             </div>
         </form>
     );

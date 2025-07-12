@@ -1,68 +1,99 @@
-import React, { useState } from 'react';
-import { FiUploadCloud, FiTrash2, FiBox, FiCheck, FiChevronDown } from 'react-icons/fi';
-import Button from '../../components/shared/Button';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiUploadCloud, FiTrash2 } from 'react-icons/fi';
+import CustomButton from '../../components/shared/CustomButton';
 import CustomListbox from '../../components/shared/CustomListbox';
-import { categories } from '../../data/categoriesData'
 import CustomInput from '../../components/shared/CustomInput';
-import TextArea from '../../components/shared/TextArea';
+import { toast } from 'react-hot-toast';
+
+// Importa le azioni/thunks da entrambi gli slice
+import { addProduct, clearMessages } from '../../store/reducers/productSlice';
+import { getCategories } from '../../store/reducers/categorySlice';
 
 const statuses = [
-  {
-    id: 1,
-    value: 'draft',
-    name: 'Bozza',
-  },
-  {
-    id: 2,
-    value: 'published',
-    name: 'Pubblicato',
-  },
-  {
-    id: 3,
-    value: 'archived',
-    name: 'Archiviato',
-  }];
+  { id: 1, value: 'published', name: 'Pubblicato' },
+  { id: 2, value: 'draft', name: 'Bozza' },
+  { id: 3, value: 'archived', name: 'Archiviato' },
+];
 
 const AddProduct = () => {
+  // 1. Hook per interagire con Redux
+  const dispatch = useDispatch();
+  const { loader, successMessage, errorMessage } = useSelector(state => state.product);
+  const { categories } = useSelector(state => state.category);
 
-
+  // Stato locale per i dati del form e le anteprime delle immagini
   const [productData, setProductData] = useState({
     name: '',
+    brand: '',
     description: '',
     price: '',
     discount: '',
     sku: '',
     stock: '',
-    category: categories[0], // Inizializza con il primo oggetto categoria
-    status: statuses.find(s => s.value === 'draft'), // Trova l'oggetto status di default
-    images: [],
+    category: null, // Inizializzato a null, verrà popolato dalle categorie caricate
+    status: statuses.find(s => s.value === 'draft'),
   });
-
-  // Stato separato per le URL di anteprima delle immagini
+  const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Gestore generico per gli input di testo
+  // 2. Carica le categorie quando il componente viene montato
+  useEffect(() => {
+    // Chiamiamo getCategories per popolare la dropdown.
+    // Assumiamo di volere tutte le categorie, quindi usiamo un perPage alto.
+    dispatch(getCategories({ page: 1, perPage: 100, search: '' }));
+  }, [dispatch]);
+
+  // Imposta la categoria di default una volta che le categorie sono state caricate
+  useEffect(() => {
+    if (categories.length > 0 && !productData.category) {
+      setProductData(prev => ({ ...prev, category: categories[0] }));
+    }
+  }, [categories, productData.category]);
+
+  // 3. Gestisce i messaggi di successo ed errore provenienti da Redux
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages()); // Pulisce il messaggio per evitare che riappaia
+      // Resetta il form
+      setProductData({
+        name: '',
+        brand: '',
+        description: '',
+        price: '',
+        discount: '',
+        sku: '',
+        stock: '',
+        category: categories.length > 0 ? categories[0] : null,
+        status: statuses.find(s => s.value === 'draft'),
+      });
+      setImages([]);
+      setImagePreviews([]);
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, errorMessage, dispatch, categories]);
+
+  // Gestori di eventi (in gran parte invariati)
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProductData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Gestore per il caricamento delle immagini
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setProductData(prev => ({ ...prev, images: [...prev.images, ...files] }));
-
-    const newPreviews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...newPreviews]);
+    if (files.length > 0) {
+      setImages(prev => [...prev, ...files]);
+      const newPreviews = files.map(file => URL.createObjectURL(file));
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+    }
   };
 
-  // Gestore per la rimozione di un'immagine dall'anteprima
   const handleRemoveImage = (index) => {
-    setProductData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    setImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -70,20 +101,30 @@ const AddProduct = () => {
     setProductData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Gestore per l'invio del form
+  // 4. Funzione di invio aggiornata per usare Redux
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    // Qui andrebbe la logica per inviare i dati a un'API
-    // Per ora, simuliamo un caricamento e stampiamo i dati in console
-    console.log("Dati del prodotto da inviare:", productData);
+    // Crea un oggetto FormData per inviare i dati, incluse le immagini
+    const formData = new FormData();
+    formData.append('name', productData.name);
+    formData.append('brand', productData.brand);
+    formData.append('description', productData.description);
+    formData.append('price', productData.price);
+    formData.append('discount', productData.discount);
+    formData.append('sku', productData.sku);
+    formData.append('stock', productData.stock);
+    // Assicurati di inviare l'ID della categoria, non l'intero oggetto
+    formData.append('category', productData.category.name); // O `productData.category._id` se il backend lo richiede
+    formData.append('status', productData.status.value);
 
-    setTimeout(() => {
-      setLoading(false);
-      alert('Prodotto salvato con successo! (Simulazione)');
-      // Potresti resettare il form o reindirizzare l'utente qui
-    }, 1500);
+    // Aggiunge tutte le immagini al FormData
+    images.forEach(image => {
+      formData.append('images', image);
+    });
+
+    // Invia l'azione per aggiungere il prodotto
+    dispatch(addProduct(formData));
   };
 
   return (
@@ -92,16 +133,15 @@ const AddProduct = () => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
           {/* Colonna Sinistra (più grande) */}
           <div className="lg:col-span-2 space-y-6">
-
             {/* Card Informazioni Prodotto */}
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-xl font-bold text-gray-700 mb-4">Informazioni Prodotto</h2>
               <div className="space-y-4">
-                <CustomInput label="Nome Prodotto" name="name" value={productData.name} onChange={handleChange} />
-                <TextArea label="Descrizione" name="description" value={productData.description} onChange={handleChange} />
+                <CustomInput label="Nome Prodotto" name="name" value={productData.name} onChange={handleChange} required />
+                <CustomInput label="Marca" name="brand" value={productData.brand} onChange={handleChange} required />
+                <CustomInput as="textarea" label="Descrizione" name="description" value={productData.description} onChange={handleChange} />
               </div>
             </div>
 
@@ -138,21 +178,18 @@ const AddProduct = () => {
 
           {/* Colonna Destra (Sidebar) */}
           <div className="space-y-6">
-
             {/* Card Prezzi e Stock */}
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-xl font-bold text-gray-700 mb-4">Prezzi e Inventario</h2>
               <div className="space-y-4">
-                <CustomInput type="number" name="price" id="price" label="Prezzo" value={productData.price} onChange={handleChange} required placeholder="0.00" step="0.01" />
-                <CustomInput type="number" name="discount" id="discount" label="% Sconto" value={productData.discount} onChange={handleChange} required placeholder="0" step="1" min="0" max="100" />
-                <CustomInput type="number" name="stock" id="stock" label="Stock" value={productData.stock} onChange={handleChange} required placeholder="0" />
-                <CustomInput type="text" name="sku" id="sku" label="SKU (Codice Prodotto)" value={productData.sku} onChange={handleChange} required placeholder="SKU" />
+                <CustomInput type="number" name="price" label="Prezzo" value={productData.price} onChange={handleChange} required placeholder="0.00" step="0.01" />
+                <CustomInput type="number" name="discount" label="% Sconto" value={productData.discount} onChange={handleChange} placeholder="0" step="1" min="0" max="100" />
+                <CustomInput type="number" name="stock" label="Stock" value={productData.stock} onChange={handleChange} required placeholder="0" />
+                <CustomInput type="text" name="sku" label="SKU (Codice Prodotto)" value={productData.sku} onChange={handleChange} placeholder="SKU" />
               </div>
             </div>
 
             {/* Card Organizzazione */}
-
-            {/* Listbox per Categoria*/}
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-xl font-bold text-gray-700 mb-4">Organizzazione</h2>
               <div className="space-y-4">
@@ -173,15 +210,13 @@ const AddProduct = () => {
           </div>
         </div>
 
-
         {/* Pulsanti di Azione */}
         <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-          <Button type="button" variant="secondary">
-            Annulla
-          </Button>
-          <Button type="submit" variant="primary" loading={loading} disabled={loading}>
-            {loading ? 'Salvataggio...' : 'Salva Prodotto'}
-          </Button>
+          <CustomButton type="button" variant="secondary">Annulla</CustomButton>
+          {/* Usa il 'loader' da Redux per lo stato di caricamento */}
+          <CustomButton type="submit" variant="primary" loading={loader} disabled={loader}>
+            {loader ? 'Salvataggio...' : 'Salva Prodotto'}
+          </CustomButton>
         </div>
       </form>
     </div>

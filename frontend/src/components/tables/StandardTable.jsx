@@ -1,21 +1,44 @@
-// src/components/StandardTable.jsx
 import React from 'react';
 
-const StandardTable = ({ data, columns }) => {
+// Un semplice componente "scheletro" per il caricamento
+const TableSkeleton = ({ columns }) => (
+    <div className="animate-pulse">
+        {/* Intestazione scheletro */}
+        <div className="bg-gray-200 h-12 rounded-t-lg"></div>
+        {/* Righe scheletro */}
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center p-4 border-b border-gray-200">
+                {columns.map((_c, j) => (
+                    <div key={j} className="flex-1 px-2">
+                        <div className="h-4 bg-gray-300 rounded"></div>
+                    </div>
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
+const StandardTable = ({ data, columns, loader }) => {
+    // -> 1. Se sta caricando, mostra lo scheletro
+    if (loader && (!data || data.length === 0)) {
+        return <TableSkeleton columns={columns} />;
+    }
+
+    // Se il caricamento è finito e non ci sono dati, mostra il messaggio
     if (!data || data.length === 0) {
-        return <p className="text-gray-500 text-center py-8">Nessun elemento da visualizzare.</p>;
+        return <p className="text-gray-500 text-center py-10">Nessun elemento da visualizzare.</p>;
     }
 
     return (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto border border-gray-200 rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-100">
+                <thead className="bg-gray-50">
                     <tr>
                         {columns.map((col, index) => (
                             <th
-                                key={index}
+                                key={col.header || index}
                                 scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
                             >
                                 {col.header}
                             </th>
@@ -24,10 +47,14 @@ const StandardTable = ({ data, columns }) => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                            {columns.map((col, colIndex) => (
-                                <td key={colIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                    {col.render ? col.render(item) : (col.accessor ? String(item[col.accessor]) : null)}
+                        <tr key={item._id || item.id} className="hover:bg-gray-50 transition-colors">
+                            {columns.map((col) => (
+                                <td
+                                    // -> 2. Chiave univoca che combina l'ID della riga e l'header della colonna
+                                    key={`${item._id || item.id}-${col.header}`}
+                                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-800"
+                                >
+                                    {col.render ? col.render(item) : (col.accessor ? item[col.accessor] : null)}
                                 </td>
                             ))}
                         </tr>

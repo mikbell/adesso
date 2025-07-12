@@ -5,6 +5,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./utils/db.js";
 import categoryRouter from "./routes/categoryRouter.js";
+import productRouter from "./routes/productRouter.js";
+import userRouter from "./routes/userRouter.js";
+import paymentRouter from "./routes/paymentRouter.js";
 import cloudinary from "cloudinary";
 
 dotenv.config();
@@ -31,8 +34,11 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api", authRouter);
-app.use("/api", categoryRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
+app.use("/api/payments", paymentRouter);
 
 app.get("/", (req, res) => {
 	res.send("Hello, World!");

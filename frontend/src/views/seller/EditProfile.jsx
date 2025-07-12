@@ -1,58 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiCamera } from 'react-icons/fi';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
-// Importa componenti e dati
-import { fetchSellerProfile } from '../../data/sellersData';
-import Button from '../../components/shared/Button';
-import TextInput from '../../components/shared/CustomInput';
+// Componenti, Icone e Azioni Redux
+import { FiArrowLeft, FiCamera } from 'react-icons/fi';
+import CustomButton from '../../components/shared/CustomButton';
+import CustomInput from '../../components/shared/CustomInput';
+import LoadingPage from '../../components/shared/LoadingPage';
+import { getUserProfile, updateUserProfile, clearUserMessages } from '../../store/reducers/userSlice';
+
 
 const EditProfile = () => {
     const navigate = useNavigate();
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    const dispatch = useDispatch();
+
+    const { userInfo } = useSelector(state => state.auth);
+    const { loader, successMessage, errorMessage } = useSelector(state => state.user);
+
+    const [profileData, setProfileData] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState(null);
 
-    // Carica i dati del profilo al montaggio del componente
     useEffect(() => {
-        const loadProfile = async () => {
-            const data = await fetchSellerProfile();
-            setProfile(data);
-            setLoading(false);
-        };
-        loadProfile();
-    }, []);
+        if (!userInfo) {
+            dispatch(getUserProfile());
+        } else {
+            setProfileData(userInfo);
+        }
+    }, [userInfo, dispatch]);
 
-    // Gestore generico per gli input
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(clearUserMessages());
+            navigate('/seller/dashboard/profile');
+        }
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(clearUserMessages());
+        }
+    }, [successMessage, errorMessage, dispatch, navigate]);
+
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setProfile(prev => ({ ...prev, [name]: value }));
+        setProfileData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    // Gestore per la modifica dell'avatar
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setProfile(prev => ({ ...prev, newAvatar: file })); // Salva il file per l'upload
-            setAvatarPreview(URL.createObjectURL(file)); // Crea l'anteprima
+            setProfileData(prev => ({ ...prev, newAvatar: file }));
+            setAvatarPreview(URL.createObjectURL(file));
         }
     };
 
-    // Gestore per il salvataggio
     const handleSubmit = (e) => {
         e.preventDefault();
-        setIsSaving(true);
-        console.log("Salvataggio dati:", profile);
-        // Qui faresti la chiamata API per salvare i dati
-        setTimeout(() => {
-            setIsSaving(false);
-            alert('Profilo aggiornato con successo!');
-            navigate('/admin/dashboard/profile');
-        }, 1500);
+        const formData = new FormData();
+        // -> Invia solo i campi effettivamente modificabili e corretti
+        formData.append('name', profileData.name);
+        formData.append('phone', profileData.phone);
+        formData.append('address', profileData.address);
+        formData.append('region', profileData.region);
+        formData.append('city', profileData.city);
+        formData.append('storeName', profileData.storeName);
+        formData.append('storeDescription', profileData.storeDescription);
+
+        if (profileData.newAvatar) {
+            formData.append('newAvatar', profileData.newAvatar);
+        }
+        dispatch(updateUserProfile(formData));
     };
 
-    if (loading) return <div className="p-6 text-center">Caricamento...</div>;
+    if (loader || !profileData) {
+        return <LoadingPage />;
+    }
 
     return (
         <div className="p-4 md:p-6">
@@ -67,49 +88,45 @@ const EditProfile = () => {
                 {/* Sezione Avatar */}
                 <div className="flex items-center gap-6">
                     <div className="relative">
-                        <img 
-                            src={avatarPreview || profile.avatarUrl} 
-                            alt="Avatar" 
-                            className="w-24 h-24 rounded-full object-cover"
-                        />
+                        <img src={avatarPreview || profileData.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
                         <label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-white p-2 rounded-full shadow cursor-pointer hover:bg-gray-100">
                             <FiCamera className="text-gray-600" />
                             <input type="file" id="avatar-upload" className="sr-only" accept="image/*" onChange={handleAvatarChange} />
                         </label>
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold">{profile.name}</h2>
-                        <p className="text-gray-500">{profile.email} (non modificabile)</p>
+                        <h2 className="text-xl font-bold">{profileData.name}</h2>
+                        <p className="text-gray-500">{profileData.email} (non modificabile)</p>
                     </div>
                 </div>
-
                 <hr />
-
                 {/* Sezione Dati Personali e Negozio */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TextInput label="Nome Completo" name="name" value={profile.name} onChange={handleChange} />
-                    <TextInput label="Telefono" name="phone" value={profile.phone} onChange={handleChange} />
-                    <TextInput label="Nome Negozio" name="storeName" value={profile.storeName} onChange={handleChange} />
-                    <TextInput label="Partita IVA" name="vatNumber" value={profile.vatNumber} disabled description="Non modificabile" />
-                    
+                    {/* -> Usiamo fallback '|| ""' per prevenire warning di React su input controllati */}
+                    <CustomInput label="Nome Completo" name="name" value={profileData.name || ''} onChange={handleChange} />
+                    <CustomInput label="Telefono" name="phone" value={profileData.phone || ''} onChange={handleChange} />
+                    <CustomInput label="Nome Negozio" name="storeName" value={profileData.storeName || ''} onChange={handleChange} />
+                    <CustomInput label="Partita IVA" name="vatNumber" value={profileData.vatNumber || ''} disabled description="Non modificabile" />
+
+                    {/* -> CAMPI CORRETTI */}
+                    <CustomInput label="Regione" name="region" value={profileData.region || ''} onChange={handleChange} />
+                    <CustomInput label="Città" name="city" value={profileData.city || ''} onChange={handleChange} />
+
                     <div className="md:col-span-2">
-                        <label htmlFor="address" className="text-sm font-medium text-gray-700">Indirizzo</label>
-                        <textarea id="address" name="address" rows="3" value={profile.address} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        <CustomInput as="textarea" label="Indirizzo Completo" name="address" value={profileData.address || ''} onChange={handleChange} rows={3} />
                     </div>
                     <div className="md:col-span-2">
-                        <label htmlFor="storeDescription" className="text-sm font-medium text-gray-700">Descrizione Negozio</label>
-                        <textarea id="storeDescription" name="storeDescription" rows="4" value={profile.storeDescription} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        <CustomInput as="textarea" label="Descrizione Negozio" name="storeDescription" value={profileData.storeDescription || ''} onChange={handleChange} rows={4} />
                     </div>
                 </div>
-
                 {/* Azioni del Form */}
                 <div className="flex justify-end gap-4 pt-4 border-t">
-                    <Button type="button" variant="secondary" onClick={() => navigate('/admin/dashboard/profile')}>
+                    <CustomButton type="button" variant="secondary" onClick={() => navigate('/seller/dashboard/profile')}>
                         Annulla
-                    </Button>
-                    <Button type="submit" loading={isSaving} disabled={isSaving}>
-                        {isSaving ? 'Salvataggio in corso...' : 'Salva Modifiche'}
-                    </Button>
+                    </CustomButton>
+                    <CustomButton type="submit" loading={loader} disabled={loader}>
+                        {loader ? 'Salvataggio in corso...' : 'Salva Modifiche'}
+                    </CustomButton>
                 </div>
             </form>
         </div>

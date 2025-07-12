@@ -1,122 +1,83 @@
-import React, { useMemo, useState } from 'react'
 import TableHeader from './TableHeader';
 import TablePagination from './TablePagination';
 import CategoriesTableRow from './CategoriesTableRow';
-import { categories } from '../../data/categoriesData';
 
-const CategoriesTable = ({ showSearch, showItemsPerPage, showButton }) => {
-    // State for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10); // Changed from ordersPerPage
-    // State for search term
-    const [searchTerm, setSearchTerm] = useState('');
+// Il componente ora riceve tutti i dati e le funzioni come props.
+const CategoriesTable = ({
+    categories,
+    totalCategories,
+    isLoading,
+    onDelete,
+    onEdit,
+    showSearch,
+    showItemsPerPage,
+    currentPage,
+    perPage,
+    search,
+    onPageChange,
+    onPerPageChange,
+    onSearchChange
+}) => {
 
-    // Dummy data for categories
-    const allCategories = useMemo(() => categories, []);
+    // La logica di paginazione ora usa i dati e le funzioni passate dal genitore.
+    const totalPages = Math.ceil(totalCategories / perPage);
 
-    // Filter categories based on search term
-    const filteredCategories = useMemo(() => {
-        if (!searchTerm) {
-            return allCategories;
-        }
-        const lowercasedSearchTerm = searchTerm.toLowerCase();
-        return allCategories.filter(category =>
-            category.id.toLowerCase().includes(lowercasedSearchTerm) ||
-            category.name.toLowerCase().includes(lowercasedSearchTerm) ||
-            category.status.toLowerCase().includes(lowercasedSearchTerm)
-        );
-    }, [allCategories, searchTerm]);
-
-    // Calculate categories to display on the current page
-    const currentCategories = useMemo(() => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        return filteredCategories.slice(indexOfFirstItem, indexOfLastItem);
-    }, [filteredCategories, currentPage, itemsPerPage]);
-
-    const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
-
-    const handlePageChange = (newPage) => {
-        setCurrentPage(newPage);
-    };
-
-    const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(Number(e.target.value));
-        setCurrentPage(1);
-    };
-
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-        setCurrentPage(1);
-    };
-
-    const handleEditCategory = (categoryId) => {
-        console.log('Modifica categoria:', categoryId);
-    };
-
-    const handleDeleteCategory = (categoryId) => {
-        console.log('Elimina categoria:', categoryId);
-        if (window.confirm(`Sei sicuro di voler eliminare la categoria ${categoryId}?`)) {
-            // Logic to remove category from state/backend
-        }
-    };
-
+    // Gestione degli stati di caricamento ed errore
+    if (isLoading && categories.length === 0) {
+        return <div className="p-4 text-center">Caricamento delle categorie...</div>;
+    }
 
     return (
         <div className="w-full p-4 bg-white rounded-lg shadow-md">
-
             <TableHeader
                 showSearch={showSearch}
                 showItemsPerPage={showItemsPerPage}
-                searchTerm={searchTerm}
-                handleSearchChange={handleSearchChange}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-                showButton={showButton}
+                searchTerm={search}
+                handleSearchChange={(e) => onSearchChange(e.target.value)}
+                itemsPerPage={perPage}
+                onItemsPerPageChange={(e) => onPerPageChange(Number(e.target.value))}
             />
-            {filteredCategories.length === 0 && searchTerm ? (
-                <p className="text-gray-500 text-center py-8">Nessuna categoria trovata per "{searchTerm}".</p>
-            ) : filteredCategories.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Nessuna categoria disponibile.</p>
+            {categories.length === 0 && !isLoading ? (
+                <p className="text-gray-500 text-center py-8">
+                    {search ? `Nessuna categoria trovata per "${search}".` : "Nessuna categoria disponibile."}
+                </p>
             ) : (
                 <>
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Categoria</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Immagine</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome Categoria</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prodotti</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stato</th>
-                                <th scope="col" className="relative px-6 py-3"><span className="sr-only">Azioni</span></th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {currentCategories.map((category) => (
-                                <CategoriesTableRow
-                                    key={category.id}
-                                    category={category}
-                                    onEdit={handleEditCategory}
-                                    onDelete={handleDeleteCategory}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {/* Pagination Controls */}
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Icona</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stato</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {categories.map((category, index) => (
+                                    <CategoriesTableRow
+                                        key={category._id}
+                                        category={category}
+                                        index={(currentPage - 1) * perPage + index + 1}
+                                        onEdit={() => onEdit(category._id)}
+                                        onDelete={() => onDelete(category._id)}
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                     {totalPages > 1 && (
                         <TablePagination
                             currentPage={currentPage}
                             totalPages={totalPages}
-                            itemsPerPage={itemsPerPage} // Changed from ordersPerPage
-                            onPageChange={handlePageChange}
-                            onItemsPerPageChange={handleItemsPerPageChange} // Changed from onOrdersPerPageChange
+                            onPageChange={onPageChange}
                         />
                     )}
                 </>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default CategoriesTable
+export default CategoriesTable;

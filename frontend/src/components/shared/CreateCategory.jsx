@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { FiUploadCloud, FiX } from 'react-icons/fi';
-import Button from './Button';
+import CustomButton from './CustomButton';
 import CustomListbox from './CustomListbox';
 import CustomInput from './CustomInput';
 import { useDispatch } from 'react-redux'; // 1. Importa useDispatch
-import { addCategory } from '../../store/reducers/categoryReducer';
+import { addCategory } from '../../store/reducers/categorySlice';
 import { toast } from 'react-hot-toast';
 
 const CreateCategory = ({ isOpen, onClose }) => {
@@ -145,14 +145,14 @@ const CreateCategory = ({ isOpen, onClose }) => {
                         </div>
                         {error && <p className="text-sm text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
                         <div className="mt-auto pt-4 border-t">
-                            <Button
+                            <CustomButton
                                 type="submit"
                                 className="w-full"
                                 loading={isLoading}
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Creazione...' : 'Crea Categoria'}
-                            </Button>
+                            </CustomButton>
                         </div>
                     </form>
                 </div>
