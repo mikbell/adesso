@@ -1,10 +1,8 @@
 import { FaEuroSign, FaUsers, FaShoppingCart } from "react-icons/fa";
 import { AiFillProduct } from "react-icons/ai";
 import Chart from 'react-apexcharts';
-import Message from '../../components/shared/Message'; // Assicurati che questo percorso sia corretto
-import DashboardCard from '../../components/shared/DashboardCard'; // <-- Importa il nuovo componente
-import OrdersTable from '../../components/tables/OrdersTable';
-import CustomButton from "../../components/shared/CustomButton";
+import { Message, DashboardCard, OrdersTable, CustomButton } from '@adesso/ui-components'; // Assicurati che questo percorso sia corretto
+
 
 const AdminDashboard = () => {
 

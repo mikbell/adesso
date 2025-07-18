@@ -4,16 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 
 // Componenti e Utilità
-import TableHeader from '../../components/tables/TableHeader';
-import StandardTable from '../../components/tables/StandardTable';
-import TablePagination from '../../components/tables/TablePagination';
-import ActionsMenu from '../../components/shared/ActionsMenu';
-import StatusBadge from '../../components/shared/StatusBadge';
-import LoadingPage from '../../components/shared/LoadingPage';
+import { TableHeader, TablePagination, StatusBadge, ActionsMenu, LoadingPage, StandardTable } from '@adesso/ui-components';
 import { FiEye, FiTruck, FiXCircle } from 'react-icons/fi';
 
 // Azioni Redux
-import { getOrders, updateOrderStatus, clearOrderMessages } from '../../store/reducers/orderSlice';
+import { getOrders, updateOrderStatus, clearOrderMessages } from '@adesso/core-logic';
 
 // Hook per il debounce (ottimo per la ricerca)
 const useDebounce = (value, delay) => {

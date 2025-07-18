@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiLock, FiCreditCard, FiCheckCircle } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
-import CustomInput from '../components/shared/CustomInput';
-import CustomButton from '../components/shared/CustomButton';
+import {CustomInput, CustomButton} from '@adesso/ui-components';
 
 // --- DATI DI ESEMPIO (In un'app reale, proverrebbero dal carrello) ---
 const cartItems = [

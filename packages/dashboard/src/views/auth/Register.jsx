@@ -1,12 +1,10 @@
 import { FaGoogle, FaFacebook } from "react-icons/fa";
 
 import { useAuthForm } from '../../hooks/useAuthForm';
-import { register } from '../../store/reducers/authSlice';
+import { register } from '@adesso/core-logic';
 
-import AuthForm from '../../components/shared/AuthForm';
-import CustomInput from '../../components/shared/CustomInput';
-import CustomCheckbox from '../../components/shared/CustomCheckbox';
-import CustomButton from '../../components/shared/CustomButton';
+import { AuthForm, CustomInput, CustomButton, CustomCheckbox } from '@adesso/ui-components';
+
 
 const validateRegister = (data) => {
     const errors = {};

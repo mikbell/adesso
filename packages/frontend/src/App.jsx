@@ -1,5 +1,5 @@
-import React from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import React, { Suspense } from 'react'
+import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
@@ -8,11 +8,12 @@ import MainLayout from './layouts/MainLayout'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Details from './pages/Details'
+import { LoadingPage } from '@adesso/ui-components'
 
 function App() {
 
   return (
-    <BrowserRouter>
+    <Suspense fallback={<LoadingPage />}>
       <MainLayout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -24,7 +25,7 @@ function App() {
           <Route path="/details/:slug" element={<Details />} />
         </Routes>
       </MainLayout>
-    </BrowserRouter>
+    </Suspense>
   )
 }
 

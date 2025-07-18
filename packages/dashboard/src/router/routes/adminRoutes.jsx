@@ -41,7 +41,7 @@ const AdminRoutes = [
         role: "admin"
     },
     {
-        path: "/admin/dashboard/seller-chat",
+        path: "/admin/dashboard/chat",
         element: <SellerChat />,
         role: "admin"
     },

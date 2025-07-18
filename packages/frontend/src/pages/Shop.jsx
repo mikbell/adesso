@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiFilter, FiX, FiChevronDown, FiStar } from 'react-icons/fi';
 import { Dialog, Disclosure, Menu, MenuButton, MenuItems, MenuItem, DisclosureButton, DisclosurePanel, DialogPanel } from '@headlessui/react';
-import PriceRangeSlider from '../components/shop/PriceRangeSlider';
-import ProductCard from '../components/products/ProductCard';
-import Rating from '../components/shop/Rating';
+import {PriceRangeSlider, ProductCard, Rating} from '@adesso/ui-components'
 
 // --- DATI DI ESEMPIO (In un'app reale, proverrebbero da un'API) ---
 const allProducts = [

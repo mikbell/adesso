@@ -1,0 +1,13 @@
+{
+  "name": "@adesso/core-logic",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "jwt-decode": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@reduxjs/toolkit": "^2.2.5",
+    "react-redux": "^9.1.2"
+  }
+}

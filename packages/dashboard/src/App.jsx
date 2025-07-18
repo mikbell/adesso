@@ -2,10 +2,10 @@
 import { useEffect, lazy, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Routes, Route } from "react-router-dom";
-import { getUserProfile } from "./store/reducers/userSlice";
+import { getUserProfile } from "@adesso/core-logic";
 
 // -> Importa i tuoi componenti e rotte...
-import LoadingPage from "./components/shared/LoadingPage";
+import { LoadingPage } from "@adesso/ui-components";
 import publicRoutes from "./router/routes/publicRoutes";
 import privateRoutes from "./router/routes/privateRoutes";
 import ProtectedRoute from "./router/ProtectedRoute";

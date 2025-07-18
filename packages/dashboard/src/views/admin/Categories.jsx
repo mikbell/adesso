@@ -1,12 +1,23 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
-import { getCategories, deleteCategory, clearMessages } from '../../store/reducers/categorySlice';
-import CategoriesTable from "../../components/tables/CategoriesTable";
-import CreateCategory from "../../components/shared/CreateCategory";
-import CustomButton from "../../components/shared/CustomButton";
+// -> Importa i thunk e le azioni da core-logic
+import { getCategories, deleteCategory, clearCategoryMessages } from '@adesso/core-logic';
+// -> Importa i componenti UI riutilizzabili da ui-components
+import {
+  StandardTable,
+  CustomButton,
+  TableHeader,
+  TablePagination,
+  ActionsMenu,
+  LoadingPage
+} from "@adesso/ui-components";
+
+// Il componente CreateCategory rimane un componente specifico di questa feature
+import CreateCategory from '../../components/categories/CreateCategory';
+
 
 const Categories = () => {
   const dispatch = useDispatch();
@@ -17,69 +28,97 @@ const Categories = () => {
   const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
 
-  // Effetto per caricare le categorie quando la pagina, il numero di elementi o la ricerca cambiano.
+  // Carica le categorie e si aggiorna dopo un'azione di successo
   useEffect(() => {
-    const params = { page: currentPage, perPage, search };
-    dispatch(getCategories(params));
-  }, [dispatch, currentPage, perPage, search]);
+    dispatch(getCategories({ page: currentPage, perPage, search }));
+  }, [dispatch, currentPage, perPage, search, successMessage]);
 
-  // Effetto per mostrare i messaggi di successo o errore.
+  // Gestisce le notifiche (toast)
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      dispatch(clearMessages());
-      // Se c'è un messaggio di successo (es. dopo l'eliminazione), ricarica i dati.
-      if (successMessage.includes('eliminata')) {
-        dispatch(getCategories({ page: currentPage, perPage, search }));
-      }
+      dispatch(clearCategoryMessages());
     }
     if (errorMessage) {
       toast.error(errorMessage);
-      dispatch(clearMessages());
+      dispatch(clearCategoryMessages());
     }
-  }, [successMessage, errorMessage, dispatch, currentPage, perPage, search]);
+  }, [successMessage, errorMessage, dispatch]);
 
-  // Funzione per gestire l'eliminazione di una categoria.
-  const handleDelete = (categoryId) => {
-    if (window.confirm('Sei sicuro di voler eliminare questa categoria?')) {
-      dispatch(deleteCategory(categoryId));
-    }
-  };
+  // --- Definizione delle Colonne per StandardTable ---
+  const columns = useMemo(() => {
+    const handleDelete = (categoryId) => {
+      if (window.confirm('Sei sicuro di voler eliminare questa categoria?')) {
+        dispatch(deleteCategory(categoryId));
+      }
+    };
+
+    const handleEdit = (categoryId) => {
+      console.log("Modifica categoria:", categoryId);
+      // Qui in futuro aprirai un modale o una pagina per la modifica
+    };
+
+    return [
+      {
+        header: 'Icona',
+        render: (cat) => <img src={cat.image} alt={cat.name} className="w-12 h-12 object-cover rounded-md" />
+      },
+      { header: 'Nome', accessor: 'name' },
+      { header: 'Slug', accessor: 'slug' },
+      {
+        header: 'Azioni',
+        render: (cat) => (
+          <ActionsMenu
+            item={cat}
+            actionGroups={[
+              { key: 'main', items: [{ label: 'Modifica', icon: FiEdit, onClick: () => handleEdit(cat._id) }] },
+              { key: 'destructive', items: [{ label: 'Elimina', icon: FiTrash2, onClick: () => handleDelete(cat._id), isDestructive: true }] }
+            ]}
+          />
+        )
+      }
+    ];
+  }, [dispatch]);
+
+
+  if (loader && categories.length === 0) {
+    return <LoadingPage />;
+  }
 
   return (
-    <div className='px-4 md:px-7 py-5'>
-      <div className="flex flex-wrap -mx-3">
-        <div className="w-full px-3 mb-6 lg:mb-0">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className='text-2xl font-bold'>Categorie</h1>
-            <CustomButton
-              onClick={() => setIsSidebarOpen(true)}
-              variant="primary"
-              icon={FiPlus}
-              size="md"
-            >
-              Aggiungi Categoria
-            </CustomButton>
-          </div>
+    <div className='p-4 md:p-6'>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <TableHeader
+          title="Categorie"
+          showSearch={true}
+          searchTerm={search}
+          handleSearchChange={(e) => setSearch(e.target.value)}
+        >
+          <CustomButton
+            onClick={() => setIsSidebarOpen(true)}
+            icon={FiPlus}
+          >
+            Aggiungi Categoria
+          </CustomButton>
+        </TableHeader>
 
-          {/* Il componente tabella ora riceve tutto via props */}
-          <CategoriesTable
-            categories={categories}
-            totalCategories={totalCategories}
-            isLoading={loader}
-            onDelete={handleDelete}
-            onEdit={(id) => console.log("Edit category:", id)} // Aggiungi la tua logica di modifica
-            // Props per la paginazione e la ricerca
-            currentPage={currentPage}
-            perPage={perPage}
-            search={search}
-            onPageChange={setCurrentPage}
-            onPerPageChange={setPerPage}
-            onSearchChange={setSearch}
-            showSearch
-            showItemsPerPage
-          />
-        </div>
+        <StandardTable
+          data={categories}
+          columns={columns}
+          loader={loader}
+        />
+
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalCategories / perPage)}
+          itemsPerPage={perPage}
+          totalItems={totalCategories}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(value) => {
+            setPerPage(value);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       <CreateCategory

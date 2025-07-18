@@ -1,96 +1,54 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FiMessageSquare, FiLoader } from 'react-icons/fi';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiMessageSquare } from 'react-icons/fi';
 
-// Componenti UI specifici
-import SellerList from '../../components/chat/SellerList';
-import ChatWindow from '../../components/chat/ChatWindow';
-import EmptyState from '../../components/chat/EmptyState';
-import ChatSkeleton from '../../components/chat/ChatSkeleton';
-
-// Funzioni di utility/dati
-import { fetchAllSellers } from '../../data/sellersData';
-
-// Funzione per generare messaggi di esempio (mantenuta per la demo)
-const generateDummyMessages = (sellerId) => {
-  const dummy = [
-    { id: 1, text: "Ciao, come posso aiutarti oggi?", sender: 'admin', timestamp: '10:30' },
-    { id: 2, text: "Vorrei un aggiornamento sul mio ultimo ordine.", sender: sellerId, timestamp: '10:31' },
-    { id: 3, text: "Certo, potresti fornirmi il numero d'ordine?", sender: 'admin', timestamp: '10:32' },
-  ];
-  return dummy;
-};
+// Componenti e Azioni
+import { SellerList, ChatWindow, EmptyState, ChatSkeleton } from '@adesso/ui-components';
+import { getSellersForChat, getMessages, sendMessage } from '@adesso/core-logic';
 
 const SellerChat = () => {
-  const [sellers, setSellers] = useState([]);
+  const dispatch = useDispatch();
+
+  // Legge i dati dallo stato di Redux
+  const { userInfo: adminInfo } = useSelector(state => state.auth);
+  const { sellers, messages, loader } = useSelector(state => state.chat);
+
   const [selectedSeller, setSelectedSeller] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Carica la lista dei venditori al montaggio
   useEffect(() => {
-    const loadSellers = async () => {
-      setLoading(true);
-      try {
-        const fetchedSellers = await fetchAllSellers();
-        const sellersWithStatus = fetchedSellers.map((seller, index) => ({
-          ...seller,
-          isActive: index % 2 === 0,
-        }));
+    dispatch(getSellersForChat());
+  }, [dispatch]);
 
-        setSellers(sellersWithStatus);
-
-      } catch (error) {
-        console.error("Errore nel caricamento dei venditori:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadSellers();
-  }, []);
-
+  // Carica i messaggi quando viene selezionato un venditore
   const handleSellerSelect = useCallback((seller) => {
     setSelectedSeller(seller);
-    // Qui caricheresti i messaggi reali da un'API
-    setMessages(generateDummyMessages(seller.id));
-  }, []);
+    dispatch(getMessages(seller._id));
+  }, [dispatch]);
 
-  const handleSendMessage = useCallback((newMessageText) => {
+  // Invia un nuovo messaggio
+  const handleSendMessage = useCallback((messageText) => {
     if (!selectedSeller) return;
-
-    const newMsg = {
-      id: Date.now(),
-      text: newMessageText,
-      sender: 'admin',
-      timestamp: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
-    };
-    setMessages(prev => [...prev, newMsg]);
-
-    // Simula una risposta automatica dal venditore
-    setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        text: "Messaggio ricevuto, ti risponderò al più presto.",
-        sender: selectedSeller.id,
-        timestamp: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages(prev => [...prev, reply]);
-    }, 1500);
-  }, [selectedSeller]);
+    dispatch(sendMessage({
+      sellerId: selectedSeller._id,
+      message: messageText,
+    }));
+  }, [dispatch, selectedSeller]);
 
   const filteredSellers = sellers.filter(seller =>
-    seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    seller.email.toLowerCase().includes(searchTerm.toLowerCase())
+    seller.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
+  if (loader) {
     return <ChatSkeleton />;
   }
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-gray-50 text-gray-800">
+    <div className="flex h-[calc(100vh-140px)] bg-gray-50 text-gray-800 rounded-lg shadow-md overflow-hidden">
       <SellerList
         sellers={filteredSellers}
-        selectedSellerId={selectedSeller?.id}
+        selectedSellerId={selectedSeller?._id}
         onSellerSelect={handleSellerSelect}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -98,9 +56,10 @@ const SellerChat = () => {
       <main className="flex-1 flex flex-col">
         {selectedSeller ? (
           <ChatWindow
-            seller={selectedSeller}
+            contact={selectedSeller}
             messages={messages}
             onSendMessage={handleSendMessage}
+            currentUserId={adminInfo._id} // Passa l'ID dell'admin per distinguere i messaggi
           />
         ) : (
           <EmptyState

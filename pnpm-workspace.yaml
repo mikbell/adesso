@@ -1,2 +1,10 @@
 packages:
-  - 'packages/*'
+  - packages/*
+
+ignoredBuiltDependencies:
+  - bcrypt
+
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - core-js
+  - esbuild

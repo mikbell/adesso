@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { clearMessages } from "../store/reducers/authSlice";
+import { clearAuthMessages } from "@adesso/core-logic";
 
 /**
  * Un hook custom per gestire la logica dei form di autenticazione.
@@ -58,11 +58,11 @@ export const useAuthForm = ({
 	useEffect(() => {
 		if (successMessage) {
 			toast.success(successMessage);
-			dispatch(clearMessages());
+			dispatch(clearAuthMessages());
 		}
 		if (errorMessage) {
 			toast.error(errorMessage);
-			dispatch(clearMessages());
+			dispatch(clearAuthMessages());
 		}
 	}, [successMessage, errorMessage, dispatch]);
 

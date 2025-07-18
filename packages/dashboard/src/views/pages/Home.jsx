@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import LoadingPage from '../../components/shared/LoadingPage';
+import { LoadingPage } from '@adesso/ui-components';
 
 const Home = () => {
     const { userInfo, loader } = useSelector((state) => state.auth);

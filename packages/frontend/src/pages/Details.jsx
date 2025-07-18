@@ -5,14 +5,18 @@ import { toast } from 'react-hot-toast';
 
 // Componenti e Icone
 import { FiShoppingCart, FiHeart } from 'react-icons/fi';
-import LoadingPage from '../components/shared/LoadingPage';
-import CustomButton from '../components/shared/CustomButton';
-import ProductImageGallery from '../components/products/ProductImageGallery';
-import SmartPrice from '../components/products/SmartPrice';
-import QuantitySelector from '../components/products/QuantitySelector';
 
-// Azioni Redux
-import { getProductById, clearProductState } from '../store/reducers/productSlice';
+// -> CORREZIONE 1: Importa tutti i componenti UI con un'unica riga
+import {
+    LoadingPage,
+    CustomButton,
+    ProductImageGallery,
+    SmartPrice,
+    QuantitySelector
+} from '@adesso/ui-components';
+
+// -> CORREZIONE 2: Usa il nome corretto del pacchetto per la logica
+import { getProductById, clearProductState } from '@adesso/core-logic';
 
 const Details = () => {
     const { productId } = useParams();

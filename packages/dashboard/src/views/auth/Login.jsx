@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthForm } from '../../hooks/useAuthForm';
-import { login } from '../../store/reducers/authSlice'; // -> Importa l'azione di login unificata
-import AuthForm from '../../components/shared/AuthForm';
-import CustomInput from '../../components/shared/CustomInput';
-import CustomButton from '../../components/shared/CustomButton';
+import { login } from '@adesso/core-logic'; // -> Importa l'azione di login unificata
+import { AuthForm, CustomInput, CustomButton } from '@adesso/ui-components';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
 
 const validateLogin = (data) => {
