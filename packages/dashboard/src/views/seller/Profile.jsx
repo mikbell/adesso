@@ -2,12 +2,9 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { FiDollarSign, FiPackage, FiStar, FiSettings, FiEdit, FiUser, FiHome } from 'react-icons/fi';
-import CustomButton from '../../components/shared/CustomButton';
-import ToggleSwitch from '../../components/shared/ToggleSwitch';
-import LoadingPage from '../../components/shared/LoadingPage';
+import { CustomButton, ToggleSwitch, LoadingPage } from '@adesso/ui-components';
+import { clearUserMessages, updateNotificationSettings, getUserProfile } from '@adesso/core-logic';
 import { Link } from 'react-router-dom';
-import { getUserProfile } from '../../store/reducers/userSlice';
-import { clearUserMessages, updateNotificationSettings } from '../../store/reducers/userSlice';
 
 const StatCard = ({ icon, label, value }) => (
     <div className="bg-gray-50 p-4 rounded-lg flex items-center gap-4">

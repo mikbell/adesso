@@ -1,5 +1,5 @@
 import React from 'react';
-import CustomButton from '../../components/shared/CustomButton';
+import { CustomButton } from '@adesso/ui-components';
 import { useNavigate } from 'react-router-dom';
 
 const Unauthorized = () => {
@@ -8,7 +8,7 @@ const Unauthorized = () => {
   const handleClick = () => {
     navigate(-1);
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center text-center p-4">
       <h1 className="text-6xl font-extrabold text-red-600">403</h1>

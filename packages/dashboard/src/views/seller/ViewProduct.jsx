@@ -5,12 +5,8 @@ import { toast } from 'react-hot-toast';
 
 // Componenti, Icone e Azioni Redux
 import { FiArrowLeft, FiEdit, FiTrash2 } from 'react-icons/fi';
-import CustomButton from '../../components/shared/CustomButton';
-import StatusBadge from '../../components/shared/StatusBadge';
-import ProductImageGallery from '../../components/products/ProductImageGallery';
-import LoadingPage from '../../components/shared/LoadingPage';
-import { getProductById, deleteProduct, clearMessages, clearProductState } from '../../store/reducers/productSlice';
-import SmartPrice from '../../components/shared/SmartPrice';
+import {CustomButton, StatusBadge, ProductImageGallery, LoadingPage} from '@adesso/ui-components';
+import { getProductById, deleteProduct, clearProductMessages, clearProductState } from '@adesso/core-logic';
 
 const ViewProduct = () => {
   const { productId } = useParams();
@@ -34,14 +30,14 @@ const ViewProduct = () => {
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      dispatch(clearMessages());
+      dispatch(clearProductMessages());
       if (successMessage.includes('eliminato')) {
         navigate('/seller/dashboard/products');
       }
     }
     if (errorMessage) {
       toast.error(errorMessage);
-      dispatch(clearMessages());
+      dispatch(clearProductMessages());
     }
   }, [successMessage, errorMessage, dispatch, navigate]);
 

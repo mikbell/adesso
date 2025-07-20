@@ -9,6 +9,7 @@ import {
 	paymentReducer,
 	orderReducer,
 	chatReducer,
+	dashboardReducer,
 } from "@adesso/core-logic";
 
 const store = configureStore({
@@ -20,6 +21,7 @@ const store = configureStore({
 		payment: paymentReducer,
 		order: orderReducer,
 		chat: chatReducer,
+		dashboard: dashboardReducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({

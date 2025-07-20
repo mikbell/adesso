@@ -5,13 +5,10 @@ import { toast } from 'react-hot-toast';
 import { FiArrowLeft, FiEdit, FiCheckCircle, FiXCircle, FiDollarSign, FiPackage, FiShoppingCart } from 'react-icons/fi';
 
 // Componenti e Utilità
-import CustomButton from '../../components/shared/CustomButton';
-import DashboardCard from '../../components/shared/DashboardCard';
-import LoadingPage from '../../components/shared/LoadingPage';
-import { getStatusClasses } from '../../utils/status';
+import {CustomButton, DashboardCard, LoadingPage} from '@adesso/ui-components';
 
 // Azioni Redux
-import { getSellerDetails, updateSellerStatus, clearSellerDetails, clearUserMessages } from '../../store/reducers/userSlice';
+import { getSellerDetails, updateSellerStatus, clearSellerDetails, clearUserMessages, getStatusClasses } from '@adesso/core-logic';
 
 // Stati possibili per il venditore (per la dropdown di modifica)
 const ALL_SELLER_STATUSES = ['active', 'inactive', 'pending', 'deactive'];

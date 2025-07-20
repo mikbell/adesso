@@ -22,7 +22,7 @@ export { default as ToggleSwitch } from "./components/shared/ToggleSwitch";
 // --- Componenti per Tabelle ---
 export { default as TableHeader } from "./components/tables/TableHeader";
 export { default as TablePagination } from "./components/tables/TablePagination";
-export { default as OrdersTable } from './components/tables/OrdersTable';
+export { default as OrdersTable } from "./components/tables/OrdersTable";
 export { default as StandardTable } from "./components/tables/StandardTable";
 
 // --- Componenti Specifici per Prodotti (utili anche per lo shop) ---
@@ -48,8 +48,14 @@ export { default as MessageBubble } from "./components/chat/MessageBubble";
 export { default as MessageInput } from "./components/chat/MessageInput";
 export { default as SellerList } from "./components/chat/SellerList";
 export { default as SellerListItem } from "./components/chat/SellerListItem";
-export { default as BannerCarousel } from './components/carousels/BannerCarousel';
-export { default as CategoryCarousel } from './components/carousels/CategoryCarousel';
-export { default as ProductGrid } from './components/products/ProductGrid';
-export { default as ProductCarousel } from './components/carousels/ProductCarousel';
-export { default as PriceRangeSlider } from './components/shared/PriceRangeSlider';
+export { default as BannerCarousel } from "./components/carousels/BannerCarousel";
+export { default as CategoryCarousel } from "./components/carousels/CategoryCarousel";
+export { default as ProductGrid } from "./components/products/ProductGrid";
+export { default as ProductCarousel } from "./components/carousels/ProductCarousel";
+export { default as PriceRangeSlider } from "./components/shared/PriceRangeSlider";
+export { default as CustomerList } from "./components/chat/CustomerList";
+
+export { default as GeneralSettings } from "./components/settings/GeneralSettings";
+export { default as SecuritySettings } from "./components/settings/SecuritySettings";
+export { default as NotificationSettings } from "./components/settings/NotificationSettings";
+export { default as Breadcrumbs } from "./components/products/Breadcrumbs";

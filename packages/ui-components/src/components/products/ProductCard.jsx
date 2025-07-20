@@ -1,32 +1,39 @@
-// src/components/products/ProductCard.jsx
 import React from 'react';
 import { FiShoppingCart, FiStar } from 'react-icons/fi';
 import CustomButton from '../shared/CustomButton';
+import SmartPrice from '../shared/SmartPrice'; // importa il nuovo componente
+import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden group transition-all duration-300 hover:shadow-xl">
-            <div className="relative">
-                <img src={product.image} alt={product.name} className="w-full h-56 object-cover" />
-                <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    -{product.discountPercentage}%
-                </div>
-            </div>
+        <Link to={`/products/${product.slug}`} className="bg-white rounded-2xl shadow-sm group hover:shadow-xl transition-all duration-300 border border-gray-100">
+            <img
+                src={product.images[0]?.url}
+                alt={product.name}
+                className="w-full h-60 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+            />
+
             <div className="p-4">
-                <p className="text-sm text-gray-500 mb-1">{product.category}</p>
-                <h3 className="text-lg font-bold text-gray-800 truncate">{product.name}</h3>
-                <div className="flex items-center my-2">
+                <p className="text-xs uppercase text-gray-400 tracking-wide mb-1">{product.category}</p>
+                <h3 className="text-base font-semibold text-gray-800 line-clamp-2">{product.name}</h3>
+
+                <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
                     <FiStar className="text-yellow-400" />
-                    <span className="text-gray-600 text-sm ml-1">{product.rating}</span>
+                    <span>{product.rating}</span>
                 </div>
-                <div className="flex items-baseline gap-2 mt-2">
-                    <p className="text-md text-gray-400 line-through">€{product.price.toFixed(2)}</p>
-                </div>
-                <CustomButton variant="outline" size="md" className="w-full mt-4" icon={FiShoppingCart}>
+
+                <SmartPrice product={product} size="md" className="mt-3" />
+
+                <CustomButton
+                    variant="outline"
+                    size="md"
+                    className="w-full mt-4 hover:bg-gray-100 transition-colors"
+                    icon={FiShoppingCart}
+                >
                     Aggiungi al Carrello
                 </CustomButton>
             </div>
-        </div>
+        </Link>
     );
 };
 

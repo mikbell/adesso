@@ -3,11 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaCcVisa, FaCcMastercard, FaPaypal, FaUniversity } from 'react-icons/fa';
 
 // Importa i componenti riutilizzabili
-import TableHeader from '../../components/tables/TableHeader';
-import StandardTable from '../../components/tables/StandardTable';
-import TablePagination from '../../components/tables/TablePagination';
-import ActionsMenu from '../../components/shared/ActionsMenu';
-import StatusBadge from '../../components/shared/StatusBadge';
+import {TableHeader, StandardTable, TablePagination, ActionsMenu, StatusBadge} from '@adesso/ui-components';
 
 // Importa dati e icone
 import { paymentsData } from '../../data/paymentsData';

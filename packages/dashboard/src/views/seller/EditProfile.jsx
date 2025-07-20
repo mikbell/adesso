@@ -5,10 +5,8 @@ import { toast } from 'react-hot-toast';
 
 // Componenti, Icone e Azioni Redux
 import { FiArrowLeft, FiCamera } from 'react-icons/fi';
-import CustomButton from '../../components/shared/CustomButton';
-import CustomInput from '../../components/shared/CustomInput';
-import LoadingPage from '../../components/shared/LoadingPage';
-import { getUserProfile, updateUserProfile, clearUserMessages } from '../../store/reducers/userSlice';
+import {CustomButton, CustomInput, LoadingPage} from '@adesso/ui-components';
+import { getUserProfile, updateUserProfile, clearUserMessages } from '@adesso/core-logic';
 
 
 const EditProfile = () => {

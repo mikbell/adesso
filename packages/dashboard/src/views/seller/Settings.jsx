@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 
 // Importa i pannelli delle singole sezioni
-import GeneralSettings from '../../components/settings/GeneralSettings';
-import SecuritySettings from '../../components/settings/SecuritySettings';
-import NotificationSettings from '../../components/settings/NotificationSettings';
+import { GeneralSettings, SecuritySettings, NotificationSettings } from '@adesso/ui-components';
 
 // Definiamo le schede disponibili
 const tabs = [

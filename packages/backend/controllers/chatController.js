@@ -82,5 +82,3 @@ export const sellerSendMessage = async (req, res) => {
 		responseReturn(res, 500, { error: "Errore nell'invio del messaggio" });
 	}
 };
-
-// Il recupero dei messaggi (getMessages) è lo stesso, possiamo riutilizzarlo.

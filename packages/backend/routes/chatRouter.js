@@ -33,5 +33,4 @@ chatRouter.post(
 	adminMiddleware,
 	sellerSendMessage
 );
-
 export default chatRouter;

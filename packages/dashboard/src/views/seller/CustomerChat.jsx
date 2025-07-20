@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FiMessageSquare } from 'react-icons/fi';
-import ChatWindow from '../../components/chat/ChatWindow'; // Riutilizziamo ChatWindow
-import CustomerListItem from '../../components/chat/CustomerListItem'; // Usiamo il nuovo componente
+import {ChatWindow, CustomerListItem} from '@adesso/ui-components'; // Riutilizziamo ChatWindow
 import { fetchAllCustomers } from '../../data/customersData'; // Usiamo i dati dei clienti
 
 // Funzione di esempio per i messaggi

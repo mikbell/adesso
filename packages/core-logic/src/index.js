@@ -63,10 +63,18 @@ export {
 
 // Esporta le azioni e i thunk da orderSlice
 export { clearOrderMessages } from "./store/reducers/orderSlice.js";
-export { getOrders, updateOrderStatus } from "./store/reducers/orderSlice.js";
+export { getOrders, updateOrderStatus, getOrderDetails, clearOrderDetails } from "./store/reducers/orderSlice.js";
 
 // Esporta le azioni e i thunk da chatSlice
-export { getSellersForChat, getMessages, sendMessage } from "./store/reducers/chatSlice.js";
+export {
+	getSellersForChat,
+	getMessages,
+	sendMessage,
+	sellerSendMessage,
+	getCustomersForSeller,
+} from "./store/reducers/chatSlice.js";
+
+export { getSellerDashboardData } from "./store/reducers/dashboardSlice.js";
 
 // --- Esportazione dei Reducer (per costruire lo store nelle app) ---
 export { default as authReducer } from "./store/reducers/authSlice.js";
@@ -76,6 +84,7 @@ export { default as categoryReducer } from "./store/reducers/categorySlice.js";
 export { default as paymentReducer } from "./store/reducers/paymentSlice.js";
 export { default as orderReducer } from "./store/reducers/orderSlice.js";
 export { default as chatReducer } from "./store/reducers/chatSlice.js";
+export { default as dashboardReducer } from "./store/reducers/dashboardSlice.js";
 
 // --- Esportazione delle Utility ---
 export { getStatusClasses } from "./utils/status.js";

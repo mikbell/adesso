@@ -2,7 +2,7 @@ import React from 'react'
 
 const Pending = () => {
   return (
-    <div>Pending</div>
+    <div>Venditore in attesa</div>
   )
 }
 

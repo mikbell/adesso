@@ -10,6 +10,7 @@ import userReducer from "./reducers/userSlice";
 import paymentReducer from "./reducers/paymentSlice";
 import chatReducer from "./reducers/chatSlice";
 import orderReducer from "./reducers/orderSlice";
+import dashboardReducer from "./reducers/dashboardSlice";
 
 const store = configureStore({
 	reducer: {
@@ -20,6 +21,7 @@ const store = configureStore({
 		payment: paymentReducer,
 		order: orderReducer,
 		chat: chatReducer,
+		dashboard: dashboardReducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({

@@ -8,13 +8,13 @@ import api from "../../api/api"; // Assicurati che il percorso all'istanza di ax
  * Fa una chiamata GET all'endpoint /products/get.
  */
 export const getProducts = createAsyncThunk(
-	"product/getProducts",
+	"products/getProducts",
 	async ({ page, perPage, search }, { rejectWithValue }) => {
 		try {
 			// Costruisce l'URL con i parametri di query per la richiesta
 			const url = `/products/get?page=${page}&perPage=${perPage}&search=${search}`;
 			const { data } = await api.get(url);
-			// Restituisce i dati ricevuti (dovrebbero includere prodotti e totale)
+			// Restituisce i dati ricevuti (dovrebbero includere products e totalProducts)
 			return data;
 		} catch (error) {
 			// In caso di errore, restituisce un messaggio di errore
@@ -25,37 +25,40 @@ export const getProducts = createAsyncThunk(
 	}
 );
 
-// Thunk per ottenere un singolo prodotto tramite ID
+/**
+ * Thunk per ottenere un singolo prodotto tramite slug o ID.
+ * Fa una chiamata GET all'endpoint /products/get/:slug.
+ */
 export const getProductById = createAsyncThunk(
-	"product/getProductById",
-	async (productId, { rejectWithValue }) => {
+	"products/getProductById",
+	async (slug, { rejectWithValue }) => {
 		try {
-			const { data } = await api.get(`/products/get/${productId}`);
-			return data; // Il backend dovrebbe restituire { product: ... }
+			const { data } = await api.get(`/products/get/${slug}`);
+			// Il backend dovrebbe restituire { product: ... }
+			return data;
 		} catch (error) {
 			return rejectWithValue(
-				error.response.data.error || "Prodotto non trovato"
+				error.response?.data?.error || "Prodotto non trovato"
 			);
 		}
 	}
 );
 
-// Thunk per aggiornare un prodotto
+/**
+ * Thunk per aggiornare un prodotto.
+ * Fa una chiamata PUT all'endpoint /products/update/:slug.
+ */
 export const updateProduct = createAsyncThunk(
-	"product/updateProduct",
-	async ({ productId, formData }, { rejectWithValue }) => {
+	"products/updateProduct",
+	async ({ slug, formData }, { rejectWithValue }) => {
 		try {
-			const { data } = await api.put(
-				`/products/update/${productId}`,
-				formData,
-				{
-					headers: { "Content-Type": "multipart/form-data" },
-				}
-			);
+			const { data } = await api.put(`/products/update/${slug}`, formData, {
+				headers: { "Content-Type": "multipart/form-data" },
+			});
 			return data;
 		} catch (error) {
 			return rejectWithValue(
-				error.response.data.error || "Errore nell'aggiornamento"
+				error.response?.data?.error || "Errore nell'aggiornamento del prodotto"
 			);
 		}
 	}
@@ -66,7 +69,7 @@ export const updateProduct = createAsyncThunk(
  * Fa una chiamata POST all'endpoint /products/add, inviando dati di tipo multipart/form-data.
  */
 export const addProduct = createAsyncThunk(
-	"product/addProduct",
+	"products/addProduct",
 	async (productData, { rejectWithValue }) => {
 		try {
 			const { data } = await api.post("/products/add", productData, {
@@ -83,14 +86,15 @@ export const addProduct = createAsyncThunk(
 
 /**
  * Thunk per eliminare un prodotto.
- * Fa una chiamata DELETE all'endpoint /products/delete/:productId.
+ * Fa una chiamata DELETE all'endpoint /products/delete/:slug.
  */
 export const deleteProduct = createAsyncThunk(
-	"product/deleteProduct",
-	async (productId, { rejectWithValue }) => {
+	"products/deleteProduct",
+	async (slug, { rejectWithValue }) => {
 		try {
-			const { data } = await api.delete(`/products/delete/${productId}`);
-			return data;
+			const { data } = await api.delete(`/products/delete/${slug}`);
+			// Aggiungi lo slug del prodotto eliminato al payload per il filtraggio
+			return { ...data, deletedSlug: slug };
 		} catch (error) {
 			return rejectWithValue(
 				error.response?.data?.error || "Errore nell'eliminazione del prodotto"
@@ -99,15 +103,13 @@ export const deleteProduct = createAsyncThunk(
 	}
 );
 
-// --- SLICE ---
-
 // Definisce lo stato iniziale per i prodotti
 const initialState = {
 	loader: false,
 	successMessage: "",
 	errorMessage: "",
 	products: [],
-	product: null, // Assicurati che 'product' sia in initialState
+	product: null,
 	totalProducts: 0,
 };
 
@@ -130,6 +132,7 @@ const productSlice = createSlice({
 				state.products = payload.products;
 				state.totalProducts = payload.totalProducts;
 			})
+			// MODIFICATO: Accedi a payload.product perché il backend restituisce { product: ... }
 			.addCase(getProductById.fulfilled, (state, { payload }) => {
 				state.product = payload.product;
 			})
@@ -140,9 +143,17 @@ const productSlice = createSlice({
 			})
 			.addCase(updateProduct.fulfilled, (state, { payload }) => {
 				state.successMessage = payload.message;
+				// Opzionale: Se payload.product è l'oggetto aggiornato, potresti aggiornarlo nella lista products qui
+				// Oppure, se stai aggiornando la vista dettagli, non è necessario aggiornare la lista generale
 			})
+			// MODIFICATO: Filtra usando deletedSlug dal payload
 			.addCase(deleteProduct.fulfilled, (state, { payload }) => {
 				state.successMessage = payload.message;
+				// Filtra i prodotti rimuovendo quello con lo slug eliminato
+				state.products = state.products.filter(
+					(product) => product.slug !== payload.deletedSlug
+				);
+				state.totalProducts -= 1;
 			})
 
 			// --- GESTIONE GENERICA CON ADDMATCHER ---

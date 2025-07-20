@@ -4,16 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 
 // Componenti UI e Icone
-import TableHeader from '../../components/tables/TableHeader';
-import StandardTable from '../../components/tables/StandardTable';
-import TablePagination from '../../components/tables/TablePagination';
-import ActionsMenu from '../../components/shared/ActionsMenu';
-import LoadingPage from '../../components/shared/LoadingPage';
+import { TableHeader, StandardTable, TablePagination, ActionsMenu, LoadingPage, SmartPrice } from '@adesso/ui-components';
 import { FiEye, FiEdit, FiTrash2 } from 'react-icons/fi';
-import SmartPrice from '../../components/shared/SmartPrice';
 
 // Azioni Redux
-import { getProducts, deleteProduct, clearMessages } from '../../store/reducers/productSlice';
+import { getProducts, deleteProduct, clearProductMessages } from '@adesso/core-logic';
 
 // Hook per il debounce
 const useDebounce = (value, delay) => {
@@ -52,13 +47,13 @@ const Products = () => {
     useEffect(() => {
         if (successMessage) {
             toast.success(successMessage);
-            dispatch(clearMessages());
+            dispatch(clearProductMessages());
             // Ricarica i dati dopo un'azione andata a buon fine
             dispatch(getProducts({ page: currentPage, perPage: itemsPerPage, search: debouncedSearchTerm }));
         }
         if (errorMessage) {
             toast.error(errorMessage);
-            dispatch(clearMessages());
+            dispatch(clearProductMessages());
         }
     }, [successMessage, errorMessage, dispatch, currentPage, itemsPerPage, debouncedSearchTerm]);
 

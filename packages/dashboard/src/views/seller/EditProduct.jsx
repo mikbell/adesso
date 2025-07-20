@@ -4,13 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 
 // Componenti, Icone e Azioni Redux
-import CustomButton from '../../components/shared/CustomButton';
-import CustomListbox from '../../components/shared/CustomListbox';
-import CustomInput from '../../components/shared/CustomInput';
+import { CustomButton, CustomListbox, CustomInput } from '@adesso/ui-components';
 import { FiUploadCloud, FiTrash2, FiArrowLeft } from 'react-icons/fi';
-import { getProductById, updateProduct, clearMessages } from '../../store/reducers/productSlice';
-import { getCategories } from '../../store/reducers/categorySlice';
-import LoadingPage from '../../components/shared/LoadingPage';
+import { getProductById, updateProduct, clearProductMessages, getCategories } from '@adesso/core-logic';
+
 
 const statuses = [
     { id: 1, value: 'draft', name: 'Bozza' },
@@ -38,7 +35,7 @@ const EditProduct = () => {
         if (categories.length === 0) {
             dispatch(getCategories({ page: 1, perPage: 100, search: '' }));
         }
-    }, [productId, dispatch]);
+    }, [productId, dispatch, categories.length]);
 
     // 2. Popola il form quando i dati del prodotto arrivano da Redux
     useEffect(() => {
@@ -55,12 +52,12 @@ const EditProduct = () => {
     useEffect(() => {
         if (successMessage) {
             toast.success(successMessage);
-            dispatch(clearMessages());
+            dispatch(clearProductMessages());
             navigate(`/seller/dashboard/products`);
         }
         if (errorMessage) {
             toast.error(errorMessage);
-            dispatch(clearMessages());
+            dispatch(clearProductMessages());
         }
     }, [successMessage, errorMessage, dispatch, navigate]);
 

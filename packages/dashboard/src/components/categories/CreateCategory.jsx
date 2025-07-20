@@ -22,8 +22,8 @@ const CreateCategory = ({ isOpen, onClose }) => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 2 * 1024 * 1024) { // 2MB
-                toast.error("L'immagine non deve superare i 2MB.");
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error("L'immagine non deve superare i 5MB.");
                 return;
             }
             setCategoryImage(file);

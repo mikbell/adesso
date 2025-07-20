@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FiMessageSquare } from 'react-icons/fi';
 
 // Componenti e Azioni
-import { CustomerList, ChatWindow, EmptyState, ChatSkeleton } from '@adesso/ui-components';
+import { ChatWindow, EmptyState, ChatSkeleton } from '@adesso/ui-components';
 import { getCustomersForSeller, getMessages, sellerSendMessage } from '@adesso/core-logic';
 
 const SupportChat = () => {
@@ -14,7 +14,7 @@ const SupportChat = () => {
   const { sellers: customers, messages, loader } = useSelector(state => state.chat);
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm] = useState('');
 
   // Carica la lista dei clienti al montaggio
   useEffect(() => {

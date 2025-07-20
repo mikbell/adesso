@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiUploadCloud, FiTrash2 } from 'react-icons/fi';
-import CustomButton from '../../components/shared/CustomButton';
-import CustomListbox from '../../components/shared/CustomListbox';
-import CustomInput from '../../components/shared/CustomInput';
+import { CustomButton, CustomListbox, CustomInput } from '@adesso/ui-components';
 import { toast } from 'react-hot-toast';
 
 // Importa le azioni/thunks da entrambi gli slice
-import { addProduct, clearMessages } from '../../store/reducers/productSlice';
-import { getCategories } from '../../store/reducers/categorySlice';
+import { addProduct, clearProductMessages, getCategories } from '@adesso/core-logic';
 
 const statuses = [
   { id: 1, value: 'published', name: 'Pubblicato' },
@@ -55,7 +52,7 @@ const AddProduct = () => {
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      dispatch(clearMessages()); // Pulisce il messaggio per evitare che riappaia
+      dispatch(clearProductMessages()); // Pulisce il messaggio per evitare che riappaia
       // Resetta il form
       setProductData({
         name: '',
@@ -73,7 +70,7 @@ const AddProduct = () => {
     }
     if (errorMessage) {
       toast.error(errorMessage);
-      dispatch(clearMessages());
+      dispatch(clearProductMessages());
     }
   }, [successMessage, errorMessage, dispatch, categories]);
 

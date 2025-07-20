@@ -39,6 +39,14 @@ export const getOrderDetails = createAsyncThunk(
 	}
 );
 
+export const clearOrderDetails = () => (dispatch) => {
+	try {
+		dispatch({ type: "order/clearOrderDetails" });
+	} catch (error) {
+		console.error(error);
+	}
+};
+
 const initialState = {
 	loader: false,
 	successMessage: "",

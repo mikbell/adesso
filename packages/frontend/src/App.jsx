@@ -22,7 +22,7 @@ function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/details/:slug" element={<Details />} />
+          <Route path="/products/:slug" element={<Details />} />
         </Routes>
       </MainLayout>
     </Suspense>

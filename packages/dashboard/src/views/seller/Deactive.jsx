@@ -2,7 +2,7 @@ import React from 'react'
 
 const Deactive = () => {
   return (
-    <div>Deactive</div>
+    <div>Venditore disattivato</div>
   )
 }
 

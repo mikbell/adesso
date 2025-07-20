@@ -1,43 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import Chart from 'react-apexcharts';
 import { FaEuroSign, FaUsers, FaShoppingCart } from "react-icons/fa";
 import { AiFillProduct } from "react-icons/ai";
-import Chart from 'react-apexcharts';
-import { Link } from 'react-router-dom';
-import Message from '../../components/shared/Message'; // Assicurati che questo percorso sia corretto
-import DashboardCard from '../../components/shared/DashboardCard'; // <-- Importa il nuovo componente
-import OrdersTable from '../../components/tables/OrdersTable';
-import CustomButton from '../../components/shared/CustomButton';
+
+// Componenti e Azioni
+import { DashboardCard, Message, OrdersTable, LoadingPage } from '@adesso/ui-components';
+import { getSellerDashboardData } from '@adesso/core-logic';
 
 const SellerDashboard = () => {
 
-    const cards = [
-        {
-            title: "Vendite",
-            value: 0,
-            icon: <FaEuroSign />,
-            bgColorClass: "bg-green-500"
-        },
-        {
-            title: "Prodotti",
-            value: 0,
-            icon: <AiFillProduct />,
-            bgColorClass: "bg-blue-500"
-        },
-        {
-            title: "Ordini",
-            value: 0,
-            icon: <FaUsers />,
-            bgColorClass: "bg-yellow-500"
-        },
-        {
-            title: "Ordini in sospeso",
-            value: 0,
-            icon: <AiFillProduct />,
-            bgColorClass: "bg-red-500"
-        }
-    ]
+    const dispatch = useDispatch();
+    const { userInfo } = useSelector(state => state.auth);
+    const { dashboardData, loader } = useSelector(state => state.dashboard);
 
-    const state = {
+    useEffect(() => {
+        dispatch(getSellerDashboardData());
+    }, [dispatch]);
+
+    if (loader) {
+        return <LoadingPage />;
+    }
+
+    const cards = [
+        { title: "Vendite", value: `€${dashboardData.totalSales.toFixed(2)}`, icon: <FaEuroSign />, bgColorClass: "bg-green-500" },
+        { title: "Prodotti", value: dashboardData.totalProducts, icon: <AiFillProduct />, bgColorClass: "bg-blue-500" },
+        { title: "Ordini Totali", value: dashboardData.totalOrders, icon: <FaShoppingCart />, bgColorClass: "bg-yellow-500" },
+        { title: "Ordini in Sospeso", value: dashboardData.pendingOrders, icon: <FaUsers />, bgColorClass: "bg-red-500" }
+    ];
+
+    const chartState = {
         series: [
             {
                 name: "Ordini",
@@ -135,143 +127,36 @@ const SellerDashboard = () => {
         }
     };
 
-    const recentMessages = [
-        {
-            id: 1,
-            sender: 'John Doe',
-            message: 'Ciao, ho bisogno di assistenza con il mio ultimo ordine (#12345).',
-            time: '2 minuti fa',
-            avatar: 'https://i.pravatar.cc/300?img=1'
-        },
-        {
-            id: 2,
-            sender: 'Jane Smith',
-            message: 'Vorrei un aggiornamento sullo stato della consegna del prodotto X.',
-            time: '1 ora fa',
-            avatar: 'https://i.pravatar.cc/300?img=2'
-        },
-        {
-            id: 3,
-            sender: 'Luca Rossi',
-            message: 'La funzionalità Y non sembra funzionare correttamente, potete controllare?',
-            time: '3 ore fa',
-            avatar: 'https://i.pravatar.cc/300?img=3'
-        },
-        {
-            id: 4,
-            sender: 'Maria Bianchi',
-            message: 'Ottimo servizio! Grazie mille per l\'aiuto.',
-            time: 'Ieri',
-            avatar: 'https://i.pravatar.cc/300?img=4'
-        }
-    ];
-
-    const orders = [
-        {
-            id: '#12345',
-            product: 'Smartphone X',
-            status: 'Consegnato',
-            price: '€599.00',
-            date: '2024-06-20'
-        },
-        {
-            id: '#12346',
-            product: 'Smartwatch Y',
-            status: 'In transito',
-            price: '€199.50',
-            date: '2024-06-19'
-        },
-        {
-            id: '#12347',
-            product: 'Cuffie Bluetooth',
-            status: 'In attesa',
-            price: '€75.00',
-            date: '2024-06-18'
-        },
-        {
-            id: '#12348',
-            product: 'Laptop Z',
-            status: 'Annullato',
-            price: '€1200.00',
-            date: '2024-06-17'
-        },
-        {
-            id: '#12349',
-            product: 'Mouse Wireless',
-            status: 'Consegnato',
-            price: '€25.99',
-            date: '2024-06-16'
-        },
-        {
-            id: '#12350',
-            product: 'Tastiera Meccanica',
-            status: 'In transito',
-            price: '€89.99',
-            date: '2024-06-15'
-        }
-    ];
-
     return (
         <div className='px-4 md:px-7 py-5'>
-
-            <div className="flex flex-wrap -mx-3">
-                <div className="w-full px-3 mb-6 lg:mb-0">
-                    <div className="flex justify-between mb-4">
-                        <h1 className='text-2xl font-bold mb-4'>Dashboard</h1>
-                    </div>
-                </div>
-            </div>
+            <h1 className='text-2xl font-bold mb-6'>Dashboard di {userInfo?.name}</h1>
 
             {/* Cards Section */}
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-                {cards.map((card, index) => (
-                    <DashboardCard
-                        key={index}
-                        title={card.title}
-                        value={card.value}
-                        icon={card.icon}
-                        bgColorClass={card.bgColorClass}
-                    />
-                ))}
+                {cards.map((card, index) => <DashboardCard key={index} {...card} />)}
             </div>
 
-            {/* Chart and Recent Orders/Customers Section */}
-            <div className="w-full flex flex-wrap -mx-3">
-                {/* Chart Section */}
+            {/* Chart and Recent Messages Section */}
+            <div className="w-full flex flex-wrap -mx-3 mb-8">
                 <div className="w-full lg:w-7/12 px-3 mb-6 lg:mb-0">
                     <div className="w-full p-4 bg-white rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Panoramica Vendite e Ordini</h3>
-                        <Chart
-                            options={state.options}
-                            series={state.series}
-                            type="bar"
-                            height={350}
-                        />
+                        <Chart options={chartState.options} series={chartState.series} type="bar" height={350} />
                     </div>
                 </div>
-
-                {/* Recent Messages Section (Right Section) */}
                 <div className="w-full lg:w-5/12 px-3">
-                    <div className="w-full p-4 bg-white rounded-lg shadow-md min-h-[400px] flex flex-col">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-gray-800">Messaggi Recenti</h3>
-                            <CustomButton to="/messages" variant="link">Mostra Tutti</CustomButton>
-                        </div>
-
-                        <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-                            {recentMessages.map(message => (
-                                <Message key={message.id} message={message} />
-                            ))}
-                        </div>
+                    <div className="w-full p-4 bg-white rounded-lg shadow-md min-h-[400px]">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Messaggi Recenti</h3>
+                        {dashboardData.recentMessages.length > 0 ? (
+                            dashboardData.recentMessages.map(msg => <Message key={msg.id} message={msg} />)
+                        ) : (
+                            <p className="text-center text-gray-500 pt-10">Nessun messaggio recente.</p>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="mt-4">
-                <OrdersTable orders={orders} title="Ordini Recenti" showViewAllLink={true} />
-            </div>
-
+            {/* Recent Orders Section */}
+            <OrdersTable orders={dashboardData.recentOrders} title="Ordini Recenti" showViewAllLink={true} />
         </div>
     );
 }

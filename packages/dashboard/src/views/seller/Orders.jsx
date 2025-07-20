@@ -2,14 +2,9 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
-import StandardTable from '../../components/tables/StandardTable';
-import TableHeader from '../../components/tables/TableHeader';
-import TablePagination from '../../components/tables/TablePagination';
-import StatusBadge from '../../components/shared/StatusBadge';
-import ActionsMenu from '../../components/shared/ActionsMenu';
-import LoadingPage from '../../components/shared/LoadingPage';
+import {StandardTable, TableHeader, TablePagination, StatusBadge, ActionsMenu, LoadingPage} from '@adesso/ui-components';
 import { FiEye, FiTruck, FiXCircle } from 'react-icons/fi';
-import { getOrders, updateOrderStatus, clearOrderMessages } from '../../store/reducers/orderSlice';
+import { getOrders, updateOrderStatus, clearOrderMessages } from '@adesso/core-logic';
 
 // Funzione per il debounce
 const useDebounce = (value, delay) => {

@@ -29,12 +29,12 @@ const Rating = ({ value }) => {
 // Helper: Renders a single product row.
 const ProductRow = ({ product }) => (
     <div className="flex items-center gap-4 p-3 transition-colors duration-300 rounded-lg hover:bg-slate-100">
-        <Link to={`/product/${product.slug}`} className="block shrink-0">
+        <Link to={`/products/${product.slug}`} className="block shrink-0">
             <img src={product.images[0]?.url} alt={product.name} className="w-20 h-20 object-cover rounded-md" />
         </Link>
         <div className="flex-grow">
             <h3 className="text-base font-semibold text-slate-800 truncate">
-                <Link to={`/product/${product.slug}`} className="hover:text-blue-600">{product.name}</Link>
+                <Link to={`/products/${product.slug}`} className="hover:text-blue-600">{product.name}</Link>
             </h3>
             <div className="flex items-center gap-2 mt-1">
                 <Rating value={product.rating || 0} />
@@ -80,7 +80,6 @@ const ProductCarousel = ({ title, products = [], isLoading = false }) => {
                         customButtonGroup={<ButtonGroup />}
                     >
                         {isLoading ? (
-                            // You can add a skeleton loader here if you want
                             <div>Loading...</div>
                         ) : (
                             productChunks.map((chunk, index) => (
