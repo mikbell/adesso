@@ -6,7 +6,12 @@ export default defineConfig({
 	plugins: [
 		react(),
 		tailwindcss({
-			config: "../../tailwind.config.js",
+			content: [
+				"./index.html",
+				"./src/**/*.{js,ts,jsx,tsx}",
+				"../../packages/ui-components/**/*.{js,ts,jsx,tsx}",
+				"../../packages/core-logic/**/*.{js,ts,jsx,tsx}",
+			],
 		}),
 	],
 });
