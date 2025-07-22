@@ -4,15 +4,43 @@ import api from "../../api/api"; // Assicurati che il percorso all'istanza di ax
 // --- THUNKS ASINCRONI PER I PRODOTTI ---
 
 /**
- * Thunk per ottenere i prodotti con paginazione e ricerca.
+ * Thunk per ottenere i prodotti con paginazione, ricerca, filtri e ordinamento.
  * Fa una chiamata GET all'endpoint /products/get.
  */
 export const getProducts = createAsyncThunk(
 	"products/getProducts",
-	async ({ page, perPage, search }, { rejectWithValue }) => {
+	async (
+		{
+			page = 1,
+			perPage = 12,
+			search = "",
+			categories = [],
+			priceRange = [0, Infinity],
+			rating = 0,
+			sortBy = "",
+		},
+		{ rejectWithValue }
+	) => {
 		try {
 			// Costruisce l'URL con i parametri di query per la richiesta
-			const url = `/products/get?page=${page}&perPage=${perPage}&search=${search}`;
+			// Assicurati che il tuo backend sia in grado di leggere e processare questi parametri
+			const params = new URLSearchParams();
+			params.append("page", page);
+			params.append("perPage", perPage);
+			if (search) params.append("search", search);
+			// Se 'Tutte' è selezionato o nessun'altra categoria, non inviare il parametro category
+			if (
+				categories.length > 0 &&
+				!(categories.length === 1 && categories[0] === "Tutte")
+			) {
+				categories.forEach((cat) => params.append("category", cat));
+			}
+			if (priceRange[0] > 0) params.append("minPrice", priceRange[0]);
+			if (priceRange[1] < Infinity) params.append("maxPrice", priceRange[1]);
+			if (rating > 0) params.append("rating", rating);
+			if (sortBy) params.append("sortBy", sortBy);
+
+			const url = `/products/get?${params.toString()}`;
 			const { data } = await api.get(url);
 			// Restituisce i dati ricevuti (dovrebbero includere products e totalProducts)
 			return data;
@@ -108,16 +136,16 @@ const initialState = {
 	loader: false,
 	successMessage: "",
 	errorMessage: "",
-	products: [],
+	products: [], // Qui verranno memorizzati i prodotti filtrati/paginati
 	product: null,
-	totalProducts: 0,
+	totalProducts: 0, // Qui verrà memorizzato il conteggio totale dei prodotti (per la paginazione)
 };
 
 const productSlice = createSlice({
 	name: "product",
 	initialState,
 	reducers: {
-		clearMessages: (state) => {
+		clearProductMessages: (state) => {
 			state.successMessage = "";
 			state.errorMessage = "";
 		},
@@ -138,8 +166,11 @@ const productSlice = createSlice({
 			})
 			.addCase(addProduct.fulfilled, (state, { payload }) => {
 				state.successMessage = payload.message;
-				state.products = [payload.product, ...state.products];
-				state.totalProducts += 1;
+				// Non aggiungiamo qui il prodotto alla lista 'products'
+				// perché la lista è gestita dal fetching con filtri e paginazione.
+				// Una nuova chiamata a getProducts aggiornerà la lista.
+				// state.products = [payload.product, ...state.products]; // Rimuovi o commenta questa riga
+				// state.totalProducts += 1; // Rimuovi o commenta questa riga
 			})
 			.addCase(updateProduct.fulfilled, (state, { payload }) => {
 				state.successMessage = payload.message;
@@ -191,5 +222,5 @@ const productSlice = createSlice({
 	},
 });
 
-export const { clearMessages, clearProductState } = productSlice.actions;
+export const { clearProductMessages, clearProductState } = productSlice.actions;
 export default productSlice.reducer;

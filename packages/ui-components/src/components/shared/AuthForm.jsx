@@ -16,7 +16,7 @@ const AuthForm = ({
     className, // Aggiungiamo la prop className
 }) => {
     return (
-        <div className='min-h-screen bg-gradient-to-br from-blue-400 to-purple-600 flex justify-center items-center p-4'>
+        <div className='min-h-screen flex justify-center items-center p-4'>
             <Fieldset
                 as="form"
                 onSubmit={handleSubmit}

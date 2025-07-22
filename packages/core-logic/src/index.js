@@ -10,10 +10,7 @@ export { default as api, setupAuthInterceptor } from "./api/api.js";
 // --- Esportazione degli Slice e delle Azioni Redux ---
 
 // Esporta sia l'azione sincrona 'clearMessages' sia il thunk 'logout' da authSlice
-export {
-	clearMessages as clearAuthMessages,
-	logout,
-} from "./store/reducers/authSlice.js";
+export { clearAuthMessages, logout } from "./store/reducers/authSlice.js";
 // Esporta tutti i thunk di autenticazione
 export { login, register } from "./store/reducers/authSlice.js";
 
@@ -35,7 +32,7 @@ export {
 
 // Esporta le azioni e i thunk da productSlice
 export {
-	clearMessages as clearProductMessages,
+	clearProductMessages,
 	clearProductState,
 } from "./store/reducers/productSlice.js";
 export {
@@ -47,7 +44,7 @@ export {
 } from "./store/reducers/productSlice.js";
 
 // Esporta le azioni e i thunk da categorySlice
-export { clearMessages as clearCategoryMessages } from "./store/reducers/categorySlice.js";
+export { clearCategoryMessages } from "./store/reducers/categorySlice.js";
 export {
 	getCategories,
 	addCategory,
@@ -63,7 +60,12 @@ export {
 
 // Esporta le azioni e i thunk da orderSlice
 export { clearOrderMessages } from "./store/reducers/orderSlice.js";
-export { getOrders, updateOrderStatus, getOrderDetails, clearOrderDetails } from "./store/reducers/orderSlice.js";
+export {
+	getOrders,
+	updateOrderStatus,
+	getOrderDetails,
+	clearOrderDetails,
+} from "./store/reducers/orderSlice.js";
 
 // Esporta le azioni e i thunk da chatSlice
 export {
@@ -76,6 +78,13 @@ export {
 
 export { getSellerDashboardData } from "./store/reducers/dashboardSlice.js";
 
+export {
+	getReviewsByProductId,
+	submitProductReview,
+	reviewSubmitReset,
+	clearReviewsState,
+} from "./store/reducers/reviewSlice.js";
+
 // --- Esportazione dei Reducer (per costruire lo store nelle app) ---
 export { default as authReducer } from "./store/reducers/authSlice.js";
 export { default as userReducer } from "./store/reducers/userSlice.js";
@@ -85,9 +94,12 @@ export { default as paymentReducer } from "./store/reducers/paymentSlice.js";
 export { default as orderReducer } from "./store/reducers/orderSlice.js";
 export { default as chatReducer } from "./store/reducers/chatSlice.js";
 export { default as dashboardReducer } from "./store/reducers/dashboardSlice.js";
+export { default as reviewReducer } from "./store/reducers/reviewSlice.js";
 
 // --- Esportazione delle Utility ---
 export { getStatusClasses } from "./utils/status.js";
 
 // --- Esportazione dello Store ---
 export { default as store } from "./store/store.js";
+
+export { useAuthForm } from "./hooks/useAuthForm.js";

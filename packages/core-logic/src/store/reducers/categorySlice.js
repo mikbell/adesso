@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api/api";
+import api from "../../api/api"; // Assicurati che il percorso all'istanza di axios sia corretto
 
 // --- THUNKS (invariati) ---
 export const getCategories = createAsyncThunk(
@@ -52,7 +52,7 @@ const initialState = {
 	loader: false,
 	successMessage: "",
 	errorMessage: "",
-	categories: [],
+	categories: [], // Qui verranno memorizzate le categorie
 	totalCategories: 0,
 };
 
@@ -60,7 +60,7 @@ const categorySlice = createSlice({
 	name: "category",
 	initialState,
 	reducers: {
-		clearMessages: (state) => {
+		clearCategoryMessages: (state) => {
 			state.successMessage = "";
 			state.errorMessage = "";
 		},
@@ -69,7 +69,7 @@ const categorySlice = createSlice({
 		builder
 			// --- GESTIONE DEI CASI FULFILLED (SPECIFICI) ---
 			.addCase(getCategories.fulfilled, (state, { payload }) => {
-				state.categories = payload.categories;
+				state.categories = payload.categories; // Assumi che il backend restituisca { categories: [...], totalCategories: ... }
 				state.totalCategories = payload.totalCategories;
 			})
 			.addCase(addCategory.fulfilled, (state, { payload }) => {
@@ -79,6 +79,9 @@ const categorySlice = createSlice({
 			})
 			.addCase(deleteCategory.fulfilled, (state, { payload }) => {
 				state.successMessage = payload.message;
+				// Potresti voler filtrare la categoria eliminata dalla lista qui
+				// state.categories = state.categories.filter(cat => cat._id !== payload.deletedCategoryId);
+				// state.totalCategories -= 1;
 			})
 
 			// --- GESTIONE GENERICA CON ADDMATCHER ---
@@ -116,5 +119,5 @@ const categorySlice = createSlice({
 	},
 });
 
-export const { clearMessages } = categorySlice.actions;
+export const { clearCategoryMessages } = categorySlice.actions;
 export default categorySlice.reducer;

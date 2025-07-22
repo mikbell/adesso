@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { clearAuthMessages } from "@adesso/core-logic";
+import { clearAuthMessages } from "../store/reducers/authSlice";
 
 /**
  * Un hook custom per gestire la logica dei form di autenticazione.

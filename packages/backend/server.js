@@ -9,6 +9,7 @@ import productRouter from "./routes/productRouter.js";
 import userRouter from "./routes/userRouter.js";
 import paymentRouter from "./routes/paymentRouter.js";
 import chatRouter from "./routes/chatRouter.js";
+import reviewRouter from "./routes/reviewRouter.js";
 import cloudinary from "cloudinary";
 
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/reviews", reviewRouter);
 
 app.get("/", (req, res) => {
 	res.send("Hello, World!");

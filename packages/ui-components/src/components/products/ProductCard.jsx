@@ -3,6 +3,7 @@ import { FiShoppingCart, FiStar } from 'react-icons/fi';
 import CustomButton from '../shared/CustomButton';
 import SmartPrice from '../shared/SmartPrice'; // importa il nuovo componente
 import { Link } from 'react-router-dom';
+import Rating from './Rating';
 
 const ProductCard = ({ product }) => {
     return (
@@ -17,10 +18,7 @@ const ProductCard = ({ product }) => {
                 <p className="text-xs uppercase text-gray-400 tracking-wide mb-1">{product.category}</p>
                 <h3 className="text-base font-semibold text-gray-800 line-clamp-2">{product.name}</h3>
 
-                <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
-                    <FiStar className="text-yellow-400" />
-                    <span>{product.rating}</span>
-                </div>
+                <Rating rating={product.rating} />
 
                 <SmartPrice product={product} size="md" className="mt-3" />
 

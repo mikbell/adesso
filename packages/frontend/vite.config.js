@@ -9,8 +9,8 @@ export default defineConfig({
 			content: [
 				"./index.html",
 				"./src/**/*.{js,ts,jsx,tsx}",
-				"../../packages/ui-components/**/*.{js,ts,jsx,tsx}",
-				"../../packages/core-logic/**/*.{js,ts,jsx,tsx}",
+				"../ui-components/src/**/*.{js,ts,jsx,tsx}",
+				"../core-logic/src/**/*.{js,ts,jsx,tsx}",
 			],
 		}),
 	],

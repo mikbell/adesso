@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getNavs } from '../../../navigation/navigation';
 import { logout } from '@adesso/core-logic';
@@ -10,7 +10,6 @@ import ProfileInfo from './ProfileInfo';
 // Rimuoviamo `userRole` dalle props, il componente ora ottiene i dati da Redux.
 const Sidebar = ({ showSidebar, setShowSidebar }) => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const { pathname } = useLocation();
 
     // Otteniamo l'intero oggetto profile dallo stato di Redux.

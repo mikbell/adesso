@@ -1,43 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 
 const responsive = {
-    superLargeDesktop: {
-        breakpoint: { max: 4000, min: 1600 },
-        items: 6,
-    },
-    desktop: {
-        breakpoint: { max: 1600, min: 1024 },
-        items: 4,
-    },
-    tablet: {
-        breakpoint: { max: 1024, min: 464 },
-        items: 4,
-    },
-    mobile: {
-        breakpoint: { max: 464, min: 0 },
-        items: 3,
-    }
+    superLargeDesktop: { breakpoint: { max: 4000, min: 1600 }, items: 6 },
+    desktop: { breakpoint: { max: 1600, min: 1024 }, items: 5 },
+    tablet: { breakpoint: { max: 1024, min: 768 }, items: 4 },
+    mobile: { breakpoint: { max: 768, min: 0 }, items: 3 },
 };
 
 const ProductImageGallery = ({ images = [], altText = 'Immagine prodotto' }) => {
-    // Inizializza activeImage in modo sicuro: usa la prima immagine se disponibile, altrimenti null
-    const [activeImage, setActiveImage] = useState(images[0] || null);
+    const [activeImage, setActiveImage] = React.useState(images[0] || null);
 
-    // Aggiorna l'immagine attiva quando le immagini prop cambiano (es. caricamento di un nuovo prodotto)
-    useEffect(() => {
-        // Solo aggiorna se ci sono immagini e l'immagine attiva corrente non è la prima nuova immagine
-        if (images.length > 0 && (!activeImage || activeImage.url !== images[0].url)) {
-            setActiveImage(images[0]);
-        } else if (images.length === 0 && activeImage !== null) {
-            // Se non ci sono più immagini, resetta l'immagine attiva
+    React.useEffect(() => {
+        if (!images.length) {
             setActiveImage(null);
+        } else if (!images.some(img => img.url === activeImage?.url)) {
+            setActiveImage(images[0]);
         }
-    }, [images, activeImage]); // activeImage come dipendenza per evitare loop se già la prima immagine
+    }, [images]);
 
-    // Se non ci sono immagini, mostra un placeholder
-    if (!images || images.length === 0 || !activeImage) { // Controllo anche per !activeImage
+    if (!activeImage) {
         return (
             <div className="bg-white p-6 rounded-lg shadow text-center flex items-center justify-center h-96">
                 <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
@@ -48,44 +31,44 @@ const ProductImageGallery = ({ images = [], altText = 'Immagine prodotto' }) => 
     }
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="w-full">
             {/* Immagine Principale */}
-            <div className="w-full h-96 mb-4 overflow-hidden rounded-lg">
+            <div className="w-full h-96 bg-white border border-gray-200 rounded-xl overflow-hidden mb-6 shadow-sm">
                 <img
                     src={activeImage.url}
                     alt={altText}
-                    className="w-full h-full object-contain transition-transform duration-300 hover:scale-105" // Changed to object-contain for better fit
+                    className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
                 />
             </div>
 
-            {/* Carousel di Anteprime */}
-            {/* Aggiunto un wrapper per il carousel per un migliore controllo dello styling */}
-            <div className="thumbnail-carousel-wrapper px-2"> {/* Aggiunto padding per frecce se abilitate */}
-                <Carousel
-                    responsive={responsive}
-                    infinite={false}
-                    arrows={true}
-                    containerClass="carousel-container"
-                    itemClass="carousel-item-padding-40-px"
-                >
-                    {
-                        images.map((image) => (
-                            <div
-                                key={image.public_id || image.url} // Usa public_id come key se disponibile, altrimenti url
-                                className={`cursor-pointer border-2 p-1 rounded-lg transition-all duration-200 ${activeImage && activeImage.url === image.url ? 'border-indigo-600' : 'border-transparent'
-                                    }`}
-                                onClick={() => setActiveImage(image)}
-                            >
-                                <img
-                                    src={image.url}
-                                    alt={altText} // Considera alt più specifico se i dati lo permettono
-                                    className="w-full h-24 object-cover rounded-md"
-                                />
-                            </div>
-                        ))
-                    }
-                </Carousel>
-            </div>
+            {/* Carousel Thumbnail */}
+            <Carousel
+                responsive={responsive}
+                infinite={true}
+                arrows={true}
+                itemClass="p-2"
+                containerClass="w-full"
+            >
+                {images.map((img) => {
+                    const isActive = activeImage?.url === img.url;
+                    return (
+                        <div
+                            key={img.public_id || img.url}
+                            role="button"
+                            onClick={() => setActiveImage(img)}
+                            className={`rounded-lg overflow-hidden border-2 aspect-square w-full cursor-pointer group
+                                ${isActive ? 'border-indigo-600' : 'border-transparent hover:border-indigo-400'}
+                            `}
+                        >
+                            <img
+                                src={img.url}
+                                alt={altText}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                        </div>
+                    );
+                })}
+            </Carousel>
         </div>
     );
 };

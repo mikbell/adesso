@@ -59,3 +59,4 @@ export { default as GeneralSettings } from "./components/settings/GeneralSetting
 export { default as SecuritySettings } from "./components/settings/SecuritySettings";
 export { default as NotificationSettings } from "./components/settings/NotificationSettings";
 export { default as Breadcrumbs } from "./components/products/Breadcrumbs";
+export { default as ScrollToTop } from "./components/shared/ScrollToTop";

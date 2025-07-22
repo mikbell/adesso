@@ -8,13 +8,14 @@ import MainLayout from './layouts/MainLayout'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Details from './pages/Details'
-import { LoadingPage } from '@adesso/ui-components'
+import { LoadingPage, ScrollToTop } from '@adesso/ui-components'
 
 function App() {
 
   return (
     <Suspense fallback={<LoadingPage />}>
       <MainLayout>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />

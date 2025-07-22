@@ -11,6 +11,7 @@ import paymentReducer from "./reducers/paymentSlice";
 import chatReducer from "./reducers/chatSlice";
 import orderReducer from "./reducers/orderSlice";
 import dashboardReducer from "./reducers/dashboardSlice";
+import reviewReducer from "./reducers/reviewSlice";
 
 const store = configureStore({
 	reducer: {
@@ -22,6 +23,7 @@ const store = configureStore({
 		order: orderReducer,
 		chat: chatReducer,
 		dashboard: dashboardReducer,
+		review: reviewReducer
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({

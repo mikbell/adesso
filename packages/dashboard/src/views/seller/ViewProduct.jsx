@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 
 // Componenti, Icone e Azioni Redux
 import { FiArrowLeft, FiEdit, FiTrash2 } from 'react-icons/fi';
-import {CustomButton, StatusBadge, ProductImageGallery, LoadingPage} from '@adesso/ui-components';
+import { CustomButton, StatusBadge, ProductImageGallery, LoadingPage, SmartPrice } from '@adesso/ui-components';
 import { getProductById, deleteProduct, clearProductMessages, clearProductState } from '@adesso/core-logic';
 
 const ViewProduct = () => {

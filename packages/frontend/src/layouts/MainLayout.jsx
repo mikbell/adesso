@@ -6,10 +6,8 @@ const MainLayout = ({ children }) => {
     return (
         <Fragment>
             <Header />
-            <main className="p-4 sm:p-6 bg-slate-50">
-                <div className='container mx-auto'>
-                    {children}
-                </div>
+            <main className="bg-slate-100 py-12">
+                {children}
             </main>
             <Footer />
         </Fragment>

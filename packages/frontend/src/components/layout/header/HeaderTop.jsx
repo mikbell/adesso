@@ -9,6 +9,7 @@ import { MdEmail } from "react-icons/md";
 import { IoMdArrowDropdown, IoMdPhonePortrait } from "react-icons/io";
 import { FaFacebookF, FaGithub, FaLinkedin, FaUser } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { CustomButton } from '@adesso/ui-components';
 
 // Importa lo stile per le icone delle bandiere (assicurati che il percorso sia corretto)
 import "/node_modules/flag-icons/css/flag-icons.min.css";
@@ -93,9 +94,9 @@ const UserAuth = ({ user }) => (
         ) : (
             <>
                 <Link to="/login" className="hover:text-blue-600 transition-colors duration-300">Login</Link>
-                <Link to="/register" className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors duration-300">
+                <CustomButton to="/register" >
                     Sign Up
-                </Link>
+                </CustomButton>
             </>
         )}
     </div>

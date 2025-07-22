@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux'; // Importa gli hook Redux
+import { getProducts } from '@adesso/core-logic'; // Assicurati che 'getProducts' sia esportato correttamente dal tuo store
 import { FiFilter, FiX, FiChevronDown, FiStar } from 'react-icons/fi';
 import { Dialog, Disclosure, Menu, MenuButton, MenuItems, MenuItem, DisclosureButton, DisclosurePanel, DialogPanel } from '@headlessui/react';
-import {PriceRangeSlider, ProductCard, Rating} from '@adesso/ui-components'
+import { CustomCheckbox, PriceRangeSlider, ProductCard, Rating, CustomInput } from '@adesso/ui-components'
 
-// --- DATI DI ESEMPIO (In un'app reale, proverrebbero da un'API) ---
-const allProducts = [
-    { id: 1, name: 'Cuffie Wireless Pro', category: 'Elettronica', price: 199.99, rating: 4.5, image: 'https://placehold.co/600x600/3B82F6/FFFFFF?text=Cuffie' },
-    { id: 2, name: 'T-Shirt in Cotone', category: 'Abbigliamento', price: 29.99, rating: 4.0, image: 'https://placehold.co/600x600/10B981/FFFFFF?text=T-Shirt' },
-    { id: 3, name: 'Lampada da Tavolo LED', category: 'Casa', price: 79.99, rating: 5.0, image: 'https://placehold.co/600x600/F59E0B/FFFFFF?text=Lampada' },
-    { id: 4, name: 'Sneakers da Corsa', category: 'Sport', price: 120.00, rating: 4.5, image: 'https://placehold.co/600x600/8B5CF6/FFFFFF?text=Scarpe' },
-    { id: 5, name: 'Smartwatch Serie 8', category: 'Elettronica', price: 499.00, rating: 5.0, image: 'https://placehold.co/600x600/3B82F6/FFFFFF?text=Watch' },
-    { id: 6, name: 'Zaino da Viaggio', category: 'Accessori', price: 89.90, rating: 4.5, image: 'https://placehold.co/600x600/10B981/FFFFFF?text=Zaino' },
-    { id: 7, name: 'Macchina per Caffè', category: 'Casa', price: 129.50, rating: 4.0, image: 'https://placehold.co/600x600/F59E0B/FFFFFF?text=Caffè' },
-    { id: 8, name: 'Mouse Gaming RGB', category: 'Elettronica', price: 65.00, rating: 3.5, image: 'https://placehold.co/600x600/EF4444/FFFFFF?text=Mouse' },
-];
+// --- DATI DI ESEMPIO (Rimuoviamo allProducts, useremo Redux) ---
+// const allProducts = [ ... ]; // Rimuovi o commenta questa sezione
 
 const categories = ['Tutte', 'Elettronica', 'Abbigliamento', 'Casa', 'Sport', 'Accessori'];
 const ratings = [5, 4, 3, 2, 1];
 const sortOptions = [
-    { name: 'Popolarità', value: 'popularity' },
+    { name: 'Popolarità', value: 'popularity' }, // Questo sarà il default se il backend non ha un ordinamento specifico per 'popularity'
     { name: 'Prezzo: dal più basso', value: 'price-asc' },
     { name: 'Prezzo: dal più alto', value: 'price-desc' },
     { name: 'Valutazione: dalla più alta', value: 'rating-desc' },
@@ -28,35 +21,38 @@ const MAX_PRICE = 500;
 
 // --- COMPONENTE PRINCIPALE: PAGINA NEGOZIO ---
 const Shop = () => {
+    const dispatch = useDispatch();
+    const { products, totalProducts, loader, errorMessage } = useSelector(state => state.product); // Ottieni i dati dallo store
+
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-    const [filteredProducts, setFilteredProducts] = useState(allProducts);
+    // Non abbiamo più bisogno di filteredProducts come stato locale, lo otteniamo da Redux
 
     // Stati per i filtri
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategories, setSelectedCategories] = useState(['Tutte']);
     const [priceRange, setPriceRange] = useState([0, MAX_PRICE]);
     const [selectedRating, setSelectedRating] = useState(0);
-    const [sortBy, setSortBy] = useState(sortOptions[0]);
+    const [sortBy, setSortBy] = useState(sortOptions[0]); // Mantiene l'oggetto completo
+    const [currentPage, setCurrentPage] = useState(1); // Nuovo stato per la paginazione
+    const [productsPerPage] = useState(12); // Quantità di prodotti per pagina
 
-
-    // --- Logica di filtraggio e gestione eventi ---
+    // --- Logica di fetching e gestione eventi ---
 
     useEffect(() => {
-        let products = [...allProducts];
-        if (searchQuery) products = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-        if (!selectedCategories.includes('Tutte')) products = products.filter(p => selectedCategories.includes(p.category));
-        products = products.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-        if (selectedRating > 0) products = products.filter(p => p.rating >= selectedRating);
-        switch (sortBy.value) {
-            case 'price-asc': products.sort((a, b) => a.price - b.price); break;
-            case 'price-desc': products.sort((a, b) => b.price - a.price); break;
-            case 'rating-desc': products.sort((a, b) => b.rating - a.rating); break;
-            default: break;
-        }
-        setFilteredProducts(products);
-    }, [searchQuery, selectedCategories, priceRange, selectedRating, sortBy]);
+        // Dispatcha il thunk per ottenere i prodotti ogni volta che i filtri cambiano
+        dispatch(getProducts({
+            page: currentPage,
+            perPage: productsPerPage,
+            search: searchQuery,
+            categories: selectedCategories,
+            priceRange: priceRange,
+            rating: selectedRating,
+            sortBy: sortBy.value, // Passa solo il 'value' dell'opzione di ordinamento
+        }));
+    }, [dispatch, currentPage, productsPerPage, searchQuery, selectedCategories, priceRange, selectedRating, sortBy]); // Dipendenze aggiornate
 
     const handleCategoryChange = (category) => {
+        setCurrentPage(1); // Reset pagina alla modifica dei filtri
         if (category === 'Tutte') {
             setSelectedCategories(['Tutte']);
         } else {
@@ -68,6 +64,7 @@ const Shop = () => {
     };
 
     const resetFilters = () => {
+        setCurrentPage(1); // Reset pagina
         setSearchQuery('');
         setSelectedCategories(['Tutte']);
         setPriceRange([0, MAX_PRICE]);
@@ -80,20 +77,14 @@ const Shop = () => {
      */
     const FiltersContent = () => (
         <div className="space-y-6">
-            <div>
-                <h3 className="text-lg font-semibold mb-3">Cerca</h3>
-                <input type="text" placeholder="Nome prodotto..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-            </div>
+            <CustomInput type="text" placeholder="Cerca..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
             <Disclosure defaultOpen>
                 {({ open }) => (
                     <div>
                         <DisclosureButton className="flex w-full justify-between items-center text-lg font-semibold">Categorie <FiChevronDown className={`${open ? 'rotate-180' : ''} transition-transform`} /></DisclosureButton>
                         <DisclosurePanel className="space-y-2 pt-2">
                             {categories.map(cat => (
-                                <div key={cat} className="flex items-center">
-                                    <input id={`cat-${cat}`} type="checkbox" checked={selectedCategories.includes(cat)} onChange={() => handleCategoryChange(cat)} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                                    <label htmlFor={`cat-${cat}`} className="ml-3 text-sm text-slate-600">{cat}</label>
-                                </div>
+                                <CustomCheckbox key={cat} label={cat} checked={selectedCategories.includes(cat)} onChange={() => handleCategoryChange(cat)} />
                             ))}
                         </DisclosurePanel>
                     </div>
@@ -104,7 +95,7 @@ const Shop = () => {
                     <div>
                         <DisclosureButton className="flex w-full justify-between items-center text-lg font-semibold">Prezzo <FiChevronDown className={`${open ? 'rotate-180' : ''} transition-transform`} /></DisclosureButton>
                         <DisclosurePanel className="pt-4">
-                            <PriceRangeSlider min={0} max={MAX_PRICE} value={priceRange} onChange={setPriceRange} />
+                            <PriceRangeSlider min={0} max={MAX_PRICE} value={priceRange} onChange={(value) => { setPriceRange(value); setCurrentPage(1); }} />
                         </DisclosurePanel>
                     </div>
                 )}
@@ -116,7 +107,7 @@ const Shop = () => {
                         <DisclosurePanel className="space-y-2 pt-2">
                             {ratings.map(r => (
                                 <div key={r} className="flex items-center">
-                                    <input id={`rating-${r}`} name="rating" type="radio" checked={selectedRating === r} onChange={() => setSelectedRating(r)} className="h-4 w-4 border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                    <input id={`rating-${r}`} name="rating" type="radio" checked={selectedRating === r} onChange={() => { setSelectedRating(r); setCurrentPage(1); }} className="h-4 w-4 border-slate-300 text-blue-600 focus:ring-blue-500" />
                                     <label htmlFor={`rating-${r}`} className="ml-3 flex items-center gap-1 text-sm text-slate-600"><Rating value={r} /> e più</label>
                                 </div>
                             ))}
@@ -156,7 +147,7 @@ const Shop = () => {
                     <div className="lg:col-span-3">
                         <div className="flex items-baseline justify-between mb-6">
                             <p className="text-sm text-slate-600">
-                                Mostrando <span className="font-bold">{filteredProducts.length}</span> di <span className="font-bold">{allProducts.length}</span> risultati
+                                Mostrando <span className="font-bold">{products.length}</span> di <span className="font-bold">{totalProducts}</span> risultati
                             </p>
                             <Menu as="div" className="relative">
                                 <MenuButton className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900">
@@ -166,7 +157,7 @@ const Shop = () => {
                                     <div className="py-1">
                                         {sortOptions.map(opt => (
                                             <MenuItem key={opt.value}>
-                                                <button onClick={() => setSortBy(opt)} className="w-full text-left block px-4 py-2 text-sm text-slate-700 data-[active]:bg-slate-100">{opt.name}</button>
+                                                <button onClick={() => { setSortBy(opt); setCurrentPage(1); }} className="w-full text-left block px-4 py-2 text-sm text-slate-700 data-[active]:bg-slate-100">{opt.name}</button>
                                             </MenuItem>
                                         ))}
                                     </div>
@@ -180,13 +171,21 @@ const Shop = () => {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                            {filteredProducts.length > 0 ? (
-                                filteredProducts.map(product => <ProductCard key={product.id} product={product} />)
-                            ) : (
-                                <p className="sm:col-span-2 xl:col-span-3 text-center text-slate-500 py-10">Nessun prodotto trovato. Prova a modificare i filtri.</p>
-                            )}
-                        </div>
+                        {loader ? (
+                            <p className="sm:col-span-2 xl:col-span-3 text-center text-slate-500 py-10">Caricamento prodotti...</p>
+                        ) : errorMessage ? (
+                            <p className="sm:col-span-2 xl:col-span-3 text-center text-red-500 py-10">Errore: {errorMessage}</p>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                                {products.length > 0 ? (
+                                    products.map(product => <ProductCard key={product._id} product={product} />) // Assumi che l'ID sia '_id'
+                                ) : (
+                                    <p className="sm:col-span-2 xl:col-span-3 text-center text-slate-500 py-10">Nessun prodotto trovato. Prova a modificare i filtri.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* TODO: Aggiungere qui la logica e i controlli per la paginazione, utilizzando totalProducts e currentPage/productsPerPage */}
                     </div>
                 </div>
             </main>
