@@ -1,7 +1,5 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuthForm } from '../../hooks/useAuthForm';
-import { login } from '@adesso/core-logic'; // -> Importa l'azione di login unificata
+import { login, useAuthForm } from '@adesso/core-logic';
 import { AuthForm, CustomInput, CustomButton } from '@adesso/ui-components';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
 
@@ -10,16 +8,17 @@ const validateLogin = (data) => {
     if (!data.email.trim()) errors.email = "L'email è richiesta.";
     else if (!/\S+@\S+\.\S+/.test(data.email)) errors.email = "Formato email non valido.";
     if (!data.password.trim()) errors.password = "La password è richiesta.";
+    // Aggiungi una validazione per il userType se necessario
+    if (!data.userType) errors.userType = "Il tipo di utente è richiesto.";
     return errors;
 };
 
-// -> Il componente non ha più bisogno della prop 'role'
 const Login = () => {
     const { formData, errors, loader, handleChange, handleSubmit } = useAuthForm({
-        initialState: { email: '', password: '' },
-        authAction: login, // -> Usa sempre l'azione 'login'
+        // Aggiungi userType allo stato iniziale, con un valore predefinito
+        initialState: { email: '', password: '', userType: 'seller' },
+        authAction: login,
         validationRules: validateLogin,
-        // Il redirect verrà gestito da PublicRoute/Home in base al ruolo ricevuto dal backend
         successRedirectPath: '/',
     });
 
@@ -44,8 +43,36 @@ const Login = () => {
                 </p>
             }
         >
-            <CustomInput label="Email" name="email" value={formData.email} onChange={handleChange} errorMessage={errors.email} />
-            <CustomInput label="Password" name="password" type="password" value={formData.password} onChange={handleChange} errorMessage={errors.password} />
+            <CustomInput
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                errorMessage={errors.email}
+            />
+            <CustomInput
+                label="Password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                errorMessage={errors.password}
+            />
+
+            {/* Aggiungi un selettore per il ruolo */}
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Accedi come:</label>
+                <select
+                    name="userType"
+                    value={formData.userType}
+                    onChange={handleChange}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                    <option value="seller">Venditore</option>
+                    <option value="admin">Amministratore</option>
+                </select>
+                {errors.userType && <p className="text-red-500 text-sm mt-1">{errors.userType}</p>}
+            </div>
         </AuthForm>
     );
 };

@@ -32,7 +32,7 @@ export const getMessages = async (req, res) => {
 };
 
 // L'admin invia un messaggio a un venditore
-export const sendMessage = async (req, res) => {
+export const adminSendMessage = async (req, res) => {
 	const adminId = req.id;
 	const { sellerId, message } = req.body;
 	try {
@@ -46,8 +46,6 @@ export const sendMessage = async (req, res) => {
 		responseReturn(res, 500, { error: "Errore nell'invio del messaggio" });
 	}
 };
-
-// In controllers/chatController.js
 
 // Ottiene i clienti che hanno chattato con il venditore loggato
 export const getCustomersForSeller = async (req, res) => {
@@ -80,5 +78,41 @@ export const sellerSendMessage = async (req, res) => {
 		responseReturn(res, 201, { message: newMessage });
 	} catch (error) {
 		responseReturn(res, 500, { error: "Errore nell'invio del messaggio" });
+	}
+};
+
+// --- NUOVA FUNZIONE: IL CLIENTE INVIA UN MESSAGGIO A UN VENDITORE ---
+
+/**
+ * @description Permette a un cliente di inviare un messaggio a un venditore.
+ * Richiede l'autenticazione del cliente e l'ID del venditore come parametro.
+ */
+export const customerSendMessage = async (req, res) => {
+	const customerId = req.id; // L'ID del cliente è dal token
+	const { sellerId, message } = req.body; // L'ID del venditore e il messaggio dal corpo
+
+	// Validazione base
+	if (!sellerId || !message) {
+		return responseReturn(res, 400, {
+			error: "ID del venditore e messaggio sono richiesti.",
+		});
+	}
+
+	try {
+		const newMessage = await ChatMessage.create({
+			senderId: customerId,
+			receiverId: sellerId,
+			message,
+		});
+
+		responseReturn(res, 201, {
+			message: "Messaggio inviato con successo",
+			newMessage,
+		});
+	} catch (error) {
+		console.error("Errore nell'invio del messaggio da cliente:", error);
+		responseReturn(res, 500, {
+			error: "Errore interno del server nell'invio del messaggio.",
+		});
 	}
 };

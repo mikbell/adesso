@@ -9,6 +9,8 @@ import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Details from './pages/Details'
 import { LoadingPage, ScrollToTop } from '@adesso/ui-components'
+import CategoryShop from './pages/CategoryShop'
+import SearchResultsShop from './pages/SearchResultsShop'
 
 function App() {
 
@@ -23,6 +25,8 @@ function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/products?" element={<CategoryShop />} />
+          <Route path="/products/search?" element={<SearchResultsShop />} />
           <Route path="/products/:slug" element={<Details />} />
         </Routes>
       </MainLayout>

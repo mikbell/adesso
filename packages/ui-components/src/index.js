@@ -60,3 +60,8 @@ export { default as SecuritySettings } from "./components/settings/SecuritySetti
 export { default as NotificationSettings } from "./components/settings/NotificationSettings";
 export { default as Breadcrumbs } from "./components/products/Breadcrumbs";
 export { default as ScrollToTop } from "./components/shared/ScrollToTop";
+
+export { default as ShopPagination } from "./components/shop/ShopPagination";
+export { default as FiltersContent } from "./components/shop/FiltersContent";
+export { default as CategoryShopFilters } from "./components/shop/CategoryShopFilters";
+export { default as SearchResultsFilters } from "./components/shop/SearchResultsFilters";

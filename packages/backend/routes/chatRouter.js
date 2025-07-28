@@ -2,9 +2,9 @@ import { Router } from "express";
 import {
 	getSellersForChat,
 	getMessages,
-	sendMessage,
 	getCustomersForSeller,
 	sellerSendMessage,
+	customerSendMessage,
 } from "../controllers/chatController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import adminMiddleware from "../middlewares/adminMiddleware.js";
@@ -19,8 +19,6 @@ chatRouter.get(
 	adminMiddleware,
 	getMessages
 );
-chatRouter.post("/send-message", authMiddleware, adminMiddleware, sendMessage);
-
 chatRouter.get(
 	"/customers/:sellerId",
 	authMiddleware,
@@ -33,4 +31,11 @@ chatRouter.post(
 	adminMiddleware,
 	sellerSendMessage
 );
+
+chatRouter.post(
+	"/customer-send-message",
+	authMiddleware,
+	customerSendMessage
+);
+
 export default chatRouter;

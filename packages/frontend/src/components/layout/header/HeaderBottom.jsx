@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom'; // Importa useNavigate
-import { useDispatch, useSelector } from 'react-redux'; // Importa gli hook Redux
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 // Importa i componenti necessari da Headless UI
 import { Menu, MenuButton, MenuItems, MenuItem, Dialog, DialogTitle, DialogPanel } from '@headlessui/react';
@@ -12,9 +12,9 @@ import { FiMenu, FiX } from 'react-icons/fi';
 import { MdKeyboardArrowDown } from 'react-icons/md';
 
 // Importa le azioni e lo stato da core-logic
-import { getCategories, clearCategoryMessages } from '@adesso/core-logic'; // Assicurati che clearMessages sia rinominato per evitare conflitti
+import { getCategories, clearCategoryMessages } from '@adesso/core-logic';
 
-// --- Dati di Configurazione (ora dinamici) ---
+// --- Dati di Configurazione ---
 const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Negozio', path: '/shop' },
@@ -23,50 +23,42 @@ const navLinks = [
     { name: 'Contatti', path: '/contact' },
 ];
 
-// Le categorie non sono più hardcoded qui, verranno da Redux
-// const categories = ['Tutte', 'Elettronica', 'Abbigliamento', 'Casa e Cucina', 'Libri', 'Sport'];
-
-// --- Componente Principale ---
-
 const HeaderBottom = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate(); // Inizializza useNavigate
+    const navigate = useNavigate();
 
     // Ottieni le categorie dallo stato Redux
-    const { categories } = useSelector(state => state.category); // Assumi che il tuo slice si chiami 'category'
+    const { categories } = useSelector(state => state.category);
+    // NUOVO: Ottieni lo stato dell'utente, wishlist e carrello
+    const { userInfo } = useSelector(state => state.auth || {});
+    const { wishlistCount, items } = useSelector(state => state.cart);
+    const cartItemCount = items ? items.length : 0;
+
 
     // Stato per la gestione del menu mobile (Dialog)
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Stati per la barra di ricerca
     const [searchQuery, setSearchQuery] = useState('');
-    // Inizializza selectedCategory con 'Tutte' o la prima categoria disponibile da Redux
     const [selectedCategory, setSelectedCategory] = useState('Tutte');
-
-    // Dati di esempio (in un'app reale proverrebbero da uno stato globale)
-    const wishlistItemCount = 3;
-    const cartItemCount = 5;
 
     // --- Fetch delle categorie all'avvio del componente ---
     useEffect(() => {
-        dispatch(getCategories({ page: 1, perPage: 100 })); // Recupera un numero sufficiente di categorie
-        // Cleanup per i messaggi di errore/successo delle categorie se necessario
+        dispatch(getCategories({ page: 1, perPage: 100 }));
         return () => {
             dispatch(clearCategoryMessages());
         };
     }, [dispatch]);
 
-    // Aggiorna selectedCategory se le categorie cambiano e 'Tutte' non è più valido
+    // Aggiorna selectedCategory se le categorie cambiano
     useEffect(() => {
         if (categories.length > 0 && !categories.some(cat => cat.name === selectedCategory) && selectedCategory !== 'Tutte') {
-            setSelectedCategory('Tutte'); // Reset alla prima categoria se quella selezionata non esiste più
+            setSelectedCategory('Tutte');
         }
     }, [categories, selectedCategory]);
 
-
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        // Naviga alla pagina shop con i parametri di ricerca
         const params = new URLSearchParams();
         if (searchQuery) {
             params.append('search', searchQuery);
@@ -74,29 +66,25 @@ const HeaderBottom = () => {
         if (selectedCategory !== 'Tutte') {
             params.append('category', selectedCategory);
         }
-        navigate(`/shop?${params.toString()}`);
-        setIsMenuOpen(false); // Chiude il menu mobile dopo la ricerca
+        navigate(`/products/search?${params.toString()}`);
+        setIsMenuOpen(false);
     };
 
-    // Stile per i link di navigazione attivi
     const activeLinkStyle = {
-        color: '#2563EB', // Corrisponde a 'text-blue-600' di Tailwind
+        color: '#2563EB',
         fontWeight: '600',
     };
 
-    // Prepara le categorie per il rendering (aggiungendo "Tutte" all'inizio)
     const displayCategories = ['Tutte', ...categories.map(cat => cat.name)];
 
     return (
         <header className="w-full bg-white shadow-md sticky top-0 z-50">
             <div className="w-[90%] mx-auto flex items-center justify-between h-20">
-
                 {/* --- Sezione Sinistra: Logo e Navigazione Desktop --- */}
                 <div className="flex items-center gap-10">
                     <Link to="/" className="text-3xl font-bold text-slate-800">
                         Adesso
                     </Link>
-
                     <nav className="hidden lg:flex items-center gap-8">
                         {navLinks.map((link) => (
                             <NavLink
@@ -127,16 +115,14 @@ const HeaderBottom = () => {
                                 anchor="bottom start"
                                 className="w-48 origin-top-left rounded-md bg-white p-1 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0 z-50"
                             >
-                                {displayCategories.map(cat => ( // Usa le categorie caricate da Redux
+                                {displayCategories.map(cat => (
                                     <MenuItem key={cat}>
                                         <button type="button" onClick={() => setSelectedCategory(cat)} className="w-full text-left block rounded-md px-3 py-1.5 data-[active]:bg-slate-100 text-slate-700">{cat}</button>
                                     </MenuItem>
                                 ))}
                             </MenuItems>
                         </Menu>
-
                         <div className="w-px h-6 bg-slate-200" />
-
                         <input
                             type="text"
                             value={searchQuery}
@@ -149,25 +135,27 @@ const HeaderBottom = () => {
                         </button>
                     </form>
 
-                    {/* Icone Azioni */}
-                    <div className="flex items-center gap-5 text-slate-700">
-                        <Link to="/wishlist" className="relative hover:text-blue-600 transition-colors">
-                            <HiOutlineHeart size={26} />
-                            {wishlistItemCount > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
-                                    {wishlistItemCount}
-                                </span>
-                            )}
-                        </Link>
-                        <Link to="/cart" className="relative hover:text-blue-600 transition-colors">
-                            <HiOutlineShoppingBag size={26} />
-                            {cartItemCount > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
-                                    {cartItemCount}
-                                </span>
-                            )}
-                        </Link>
-                    </div>
+                    {/* Icone Azioni: Renderizza solo se l'utente è loggato */}
+                    {userInfo && (
+                        <div className="flex items-center gap-5 text-slate-700">
+                            <Link to="/wishlist" className="relative hover:text-blue-600 transition-colors">
+                                <HiOutlineHeart size={26} />
+                                {wishlistCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
+                                        {wishlistCount}
+                                    </span>
+                                )}
+                            </Link>
+                            <Link to="/cart" className="relative hover:text-blue-600 transition-colors">
+                                <HiOutlineShoppingBag size={26} />
+                                {cartItemCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
+                                        {cartItemCount}
+                                    </span>
+                                )}
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 {/* --- Pulsante Menu per Mobile --- */}
@@ -182,7 +170,6 @@ const HeaderBottom = () => {
             <Dialog open={isMenuOpen} onClose={() => setIsMenuOpen(false)} className="relative z-50 lg:hidden">
                 {/* Overlay di sfondo */}
                 <div className="fixed inset-0 bg-black/30 transition-opacity data-[closed]:opacity-0" aria-hidden="true" />
-
                 {/* Pannello del menu */}
                 <div className="fixed inset-0 flex justify-end">
                     <DialogPanel className="w-full max-w-xs bg-white p-6 transition-transform data-[closed]:translate-x-full">
@@ -192,12 +179,12 @@ const HeaderBottom = () => {
                                 <FiX size={28} />
                             </button>
                         </div>
-                        <nav className="flex flex-col gap-6 mb-8"> {/* Aggiunto mb-8 per separare dalla ricerca */}
+                        <nav className="flex flex-col gap-6 mb-8">
                             {navLinks.map((link) => (
                                 <NavLink
                                     key={link.name}
                                     to={link.path}
-                                    onClick={() => setIsMenuOpen(false)} // Chiude il menu al click
+                                    onClick={() => setIsMenuOpen(false)}
                                     className="text-xl text-slate-600 font-medium"
                                     style={({ isActive }) => (isActive ? activeLinkStyle : undefined)}
                                 >
@@ -207,7 +194,7 @@ const HeaderBottom = () => {
                         </nav>
 
                         {/* Barra di Ricerca per Mobile */}
-                        <form onSubmit={handleSearchSubmit} className="mb-8"> {/* Aggiunto mb-8 */}
+                        <form onSubmit={handleSearchSubmit} className="mb-8">
                             <div className="flex items-center border border-slate-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-300">
                                 <Menu as="div" className="relative">
                                     <MenuButton className="flex items-center gap-1 pl-4 pr-2 h-11 text-sm text-slate-600">
@@ -218,7 +205,7 @@ const HeaderBottom = () => {
                                         anchor="bottom start"
                                         className="w-48 origin-top-left rounded-md bg-white p-1 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0 z-50"
                                     >
-                                        {displayCategories.map(cat => ( // Usa le categorie caricate da Redux
+                                        {displayCategories.map(cat => (
                                             <MenuItem key={cat}>
                                                 <button type="button" onClick={() => setSelectedCategory(cat)} className="w-full text-left block rounded-md px-3 py-1.5 data-[active]:bg-slate-100 text-slate-700">{cat}</button>
                                             </MenuItem>
@@ -239,11 +226,27 @@ const HeaderBottom = () => {
                             </div>
                         </form>
 
-                        <div className="mt-auto pt-10 border-t border-slate-200 flex justify-center gap-8">
-                            {/* Qui si possono aggiungere le icone utente anche per mobile */}
-                            <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-slate-600"><HiOutlineHeart size={28} /></Link>
-                            <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="text-slate-600"><HiOutlineShoppingBag size={28} /></Link>
-                        </div>
+                        {/* Icone Azioni per Mobile: Renderizza solo se l'utente è loggato */}
+                        {userInfo && (
+                            <div className="mt-auto pt-10 border-t border-slate-200 flex justify-center gap-8">
+                                <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="relative text-slate-600 hover:text-blue-600 transition-colors">
+                                    <HiOutlineHeart size={28} />
+                                    {wishlistCount > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
+                                            {wishlistCount}
+                                        </span>
+                                    )}
+                                </Link>
+                                <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="relative text-slate-600 hover:text-blue-600 transition-colors">
+                                    <HiOutlineShoppingBag size={28} />
+                                    {cartItemCount > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
+                                            {cartItemCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            </div>
+                        )}
                     </DialogPanel>
                 </div>
             </Dialog>

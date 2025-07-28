@@ -3,10 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
+import { PersistGate } from 'redux-persist/integration/react'; // Importa PersistGate
 import './index.css';
 
 // Importa i componenti e la logica necessari
-import { store, setupAuthInterceptor } from '@adesso/core-logic';
+// Ora assumiamo che '@adesso/core-logic' esporterà anche il 'persistor'
+import { store, persistor, setupAuthInterceptor } from '@adesso/core-logic';
 import { ErrorBoundary, LoadingPage } from '@adesso/ui-components';
 
 // Carica il componente App in modo "lazy" per ottimizzare le performance
@@ -17,31 +19,31 @@ setupAuthInterceptor(store);
 
 const container = document.getElementById('root');
 
-// Questo controllo previene errori con l'Hot Module Replacement in sviluppo
 if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <BrowserRouter>
-        <Provider store={store}>
-          <Suspense fallback={<LoadingPage />}>
-            <ErrorBoundary>
-              <App />
-            </ErrorBoundary>
-          </Suspense>
-
-          {/* Il Toaster per le notifiche vive qui */}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: '#374151',
-                color: '#F9FAFB',
-              },
-            }}
-          />
-        </Provider>
-      </BrowserRouter>
+      <Provider store={store}>
+        {/* Avvolgi il resto dell'applicazione con PersistGate */}
+        <PersistGate loading={<LoadingPage />} persistor={persistor}>
+          <BrowserRouter>
+            <Suspense fallback={<LoadingPage />}>
+              <ErrorBoundary>
+                <App />
+              </ErrorBoundary>
+            </Suspense>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#374151',
+                  color: '#F9FAFB',
+                },
+              }}
+            />
+          </BrowserRouter>
+        </PersistGate>
+      </Provider>
     </React.StrictMode>
   );
 }

@@ -1,6 +1,23 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api";
 
+// --- NUOVA AZIONE ASINCRONA ---
+/**
+ * @description Crea un nuovo ordine dopo il checkout.
+ */
+export const createOrder = createAsyncThunk(
+	"order/createOrder",
+	async (orderData, { rejectWithValue }) => {
+		try {
+			const { data } = await api.post("/orders", orderData);
+			return data.message;
+		} catch (error) {
+			return rejectWithValue(error.response.data.error);
+		}
+	}
+);
+
+// --- AZIONI ESISTENTI ---
 export const getOrders = createAsyncThunk(
 	"order/getOrders",
 	async ({ page, perPage, search, status }, { rejectWithValue }) => {
@@ -53,7 +70,7 @@ const initialState = {
 	errorMessage: "",
 	orders: [],
 	totalOrders: 0,
-	orderDetails: null, // -> Aggiunto per i dettagli del singolo ordine
+	orderDetails: null,
 };
 
 const orderSlice = createSlice({
@@ -70,10 +87,31 @@ const orderSlice = createSlice({
 	},
 	extraReducers: (builder) => {
 		builder
+			// Gestione dell'azione createOrder
+			.addCase(createOrder.pending, (state) => {
+				state.loader = true;
+			})
+			.addCase(createOrder.fulfilled, (state, { payload }) => {
+				state.loader = false;
+				state.successMessage = payload; // Qui payload è una stringa
+			})
+			.addCase(createOrder.rejected, (state, { payload }) => {
+				state.loader = false;
+				state.errorMessage = payload;
+			})
+			// Gestione dell'azione updateOrderStatus
+			.addCase(updateOrderStatus.fulfilled, (state, { payload }) => {
+				state.loader = false;
+				state.successMessage = payload; // Qui payload è una stringa
+			})
+			// Gestione dell'azione getOrders
 			.addCase(getOrders.fulfilled, (state, { payload }) => {
+				state.loader = false; // Spostato qui per una migliore granularità
 				state.orders = payload.orders;
 				state.totalOrders = payload.totalOrders;
+				// Non assegnare qui il successMessage, perché non è un messaggio
 			})
+			// Gestione dell'azione getOrderDetails
 			.addCase(getOrderDetails.pending, (state) => {
 				state.loader = true;
 			})
@@ -85,22 +123,19 @@ const orderSlice = createSlice({
 				state.loader = false;
 				state.errorMessage = payload;
 			})
+			// Il matcher generico per pending va bene
 			.addMatcher(
 				(action) =>
 					action.type.startsWith("order/") && action.type.endsWith("/pending"),
 				(state) => {
 					state.loader = true;
+					// È una buona pratica pulire i messaggi qui
+					state.successMessage = "";
+					state.errorMessage = "";
 				}
 			)
-			.addMatcher(
-				(action) =>
-					action.type.startsWith("order/") &&
-					action.type.endsWith("/fulfilled"),
-				(state, { payload }) => {
-					state.loader = false;
-					state.successMessage = payload;
-				}
-			)
+			// Sostituisci il matcher generico per rejected con un `addMatcher`
+			// che gestisce solo i messaggi di errore
 			.addMatcher(
 				(action) =>
 					action.type.startsWith("order/") && action.type.endsWith("/rejected"),

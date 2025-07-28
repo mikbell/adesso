@@ -151,7 +151,7 @@ export const customerRegister = async (req, res) => {
 		generateTokenAndSetCookie(
 			user,
 			res,
-			"Registrazione cliente completata",
+			"Registrazione completata",
 			201
 		);
 	} catch (error) {

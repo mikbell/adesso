@@ -16,7 +16,7 @@ const MainLayout = lazy(() => import('./layout/MainLayout.jsx'));
 function App() {
   const dispatch = useDispatch();
   // -> Seleziona il nuovo stato e userInfo
-  const { authStatus, userInfo } = useSelector((state) => state.auth);
+  const { authStatus } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // -> Esegui il controllo solo una volta, all'avvio dell'app

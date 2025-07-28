@@ -19,7 +19,11 @@ const orderSchema = new mongoose.Schema(
 			enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
 			default: "pending",
 		},
-		shippingAddress: { type: String, required: true },
+		shippingAddress: {
+			address: { type: String, required: true },
+			city: { type: String, required: true },
+			postalCode: { type: String, required: true },
+		},
 	},
 	{ timestamps: true }
 );

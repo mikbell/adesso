@@ -1,49 +1,111 @@
 import React, { useState, useEffect } from 'react';
-import { FiLock, FiCreditCard, FiCheckCircle } from 'react-icons/fi';
-import {CustomInput, CustomButton} from '@adesso/ui-components';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiLock, FiCreditCard } from 'react-icons/fi';
+import { CustomInput, CustomButton } from '@adesso/ui-components';
+import { createOrder, clearCartAsync } from '@adesso/core-logic';
+import { PulseLoader } from 'react-spinners';
 
-// --- DATI DI ESEMPIO (In un'app reale, proverrebbero dal carrello) ---
-const cartItems = [
-    { id: 1, name: 'Cuffie Wireless Pro', price: 199.99, quantity: 1, image: 'https://placehold.co/200x200/3B82F6/FFFFFF?text=Cuffie' },
-    { id: 4, name: 'Sneakers da Corsa', price: 120.00, quantity: 1, image: 'https://placehold.co/200x200/8B5CF6/FFFFFF?text=Scarpe' },
-    { id: 2, name: 'T-Shirt in Cotone', price: 29.99, quantity: 2, image: 'https://placehold.co/200x200/10B981/FFFFFF?text=T-Shirt' },
-];
+// COSTO DI SPEDIZIONE FISSO
+const SHIPPING_COST = 2.99;
 
-const SHIPPING_COST = 9.99;
-
-// --- COMPONENTE PRINCIPALE: PAGINA CHECKOUT ---
+// COMPONENTE PRINCIPALE: PAGINA CHECKOUT
 const Checkout = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const [state, setState] = useState({
+    // Ottieni gli elementi del carrello e lo stato dell'ordine dallo stato Redux
+    const { items, total: subtotal } = useSelector(state => state.cart);
+    const { loader: orderLoader, successMessage, errorMessage } = useSelector(state => state.order);
+
+    const [formState, setFormState] = useState({
         name: '',
+        lastName: '',
         email: '',
         address: '',
         city: '',
         postalCode: '',
+        cardName: '',
+        cardNumber: '',
+        expirationDate: '',
+        cvv: ''
     });
 
-    const handleChange = (e) => {
-        setState({
-            ...state,
-            [e.target.name]: e.target.value,
-        });
-    };
+    const [formErrors, setFormErrors] = useState({});
 
-    const [subtotal, setSubtotal] = useState(0);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-    // Calcola il subtotale all'avvio
-    useEffect(() => {
-        const newSubtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        setSubtotal(newSubtotal);
-    }, []);
-
+    // Calcola il totale complessivo dell'ordine
     const total = subtotal + SHIPPING_COST;
 
-    // Gestisce l'invio del form
-    const handleFormSubmit = (event) => {
+    // Reindirizza l'utente se il carrello è vuoto
+    useEffect(() => {
+        if (items.length === 0 && !orderLoader) {
+            navigate('/cart');
+        }
+    }, [items, orderLoader, navigate]);
+
+    // Gestione dei messaggi di successo o errore dopo l'ordine
+    useEffect(() => {
+        if (successMessage) {
+            // Svuota il carrello dopo un ordine andato a buon fine
+            dispatch(clearCartAsync());
+            navigate('/order-success'); // Reindirizza a una pagina di successo
+        }
+        if (errorMessage) {
+            // Mostra un feedback all'utente in caso di errore
+            alert(`Errore nell'ordine: ${errorMessage}`);
+        }
+    }, [successMessage, errorMessage, dispatch, navigate]);
+
+    // Gestore per l'aggiornamento dei campi del form
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormState(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Rimuove l'errore del campo non appena l'utente inizia a digitare
+        setFormErrors(prev => ({
+            ...prev,
+            [name]: undefined
+        }));
+    };
+
+    // Funzione di validazione del form
+    const validateForm = () => {
+        const errors = {};
+        if (!formState.email) errors.email = "L'email è richiesta.";
+        if (!formState.name) errors.name = "Il nome è richiesto.";
+        if (!formState.lastName) errors.lastName = "Il cognome è richiesto.";
+        if (!formState.address) errors.address = "L'indirizzo è richiesto.";
+        if (!formState.city) errors.city = "La città è richiesta.";
+        if (!formState.postalCode) errors.postalCode = "Il CAP è richiesto.";
+        if (!formState.cardNumber) errors.cardNumber = "Il numero della carta è richiesto.";
+        if (!formState.expirationDate) errors.expirationDate = "La data di scadenza è richiesta.";
+        if (!formState.cvv) errors.cvv = "Il CVV è richiesto.";
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    // Gestore per l'invio del form
+    const handleFormSubmit = async (event) => {
         event.preventDefault();
-        setShowSuccessModal(true);
+
+        if (validateForm()) {
+            // Prepara i dati per l'invio al backend
+            const orderData = {
+                shippingInfo: formState,
+                cartItems: items.map(item => ({
+                    productId: item._id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    name: item.name, // Invia anche il nome del prodotto
+                })),
+                total,
+            };
+
+            // Dispatch dell'azione di creazione dell'ordine
+            dispatch(createOrder(orderData));
+        }
     };
 
     return (
@@ -54,30 +116,66 @@ const Checkout = () => {
                     {/* Colonna Sinistra: Modulo Informazioni */}
                     <div className="bg-white p-8 rounded-lg shadow-sm">
                         <h2 className="text-2xl font-semibold text-slate-800">Informazioni di Spedizione</h2>
-                        {/* Aggiunto id e onSubmit al form */}
                         <form id="checkout-form" onSubmit={handleFormSubmit} className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
-                            {/* Informazioni di Contatto */}
-                            <CustomInput label="Email" name="email" type="email" required={true} onChange={handleChange} />
-
-                            {/* Indirizzo di Spedizione */}
+                            <CustomInput
+                                label="Email" name="email" type="email"
+                                onChange={handleChange} value={formState.email}
+                                error={formErrors.email} required={true}
+                            />
                             <div className="sm:col-span-2">
                                 <h3 className="text-lg font-medium text-slate-900 mt-4">Indirizzo di Spedizione</h3>
                             </div>
-
-                            <CustomInput label="Nome" name="name" type="text" required={true} onChange={handleChange} />
-                            <CustomInput label="Cognome" name="lastName" type="text" required={true} onChange={handleChange} />
-                            <CustomInput label="Indirizzo" name="address" type="text" required={true} onChange={handleChange} />
-                            <CustomInput label="Città" name="city" type="text" required={true} onChange={handleChange} />
-                            <CustomInput label="CAP" name="postalCode" type="text" required={true} onChange={handleChange} />
-
-                            {/* Dettagli di Pagamento */}
+                            <CustomInput
+                                label="Nome" name="name" type="text"
+                                onChange={handleChange} value={formState.name}
+                                error={formErrors.name} required={true}
+                            />
+                            <CustomInput
+                                label="Cognome" name="lastName" type="text"
+                                onChange={handleChange} value={formState.lastName}
+                                error={formErrors.lastName} required={true}
+                            />
+                            <CustomInput
+                                label="Indirizzo" name="address" type="text"
+                                onChange={handleChange} value={formState.address}
+                                error={formErrors.address} required={true}
+                            />
+                            <CustomInput
+                                label="Città" name="city" type="text"
+                                onChange={handleChange} value={formState.city}
+                                error={formErrors.city} required={true}
+                            />
+                            <CustomInput
+                                label="CAP" name="postalCode" type="text"
+                                onChange={handleChange} value={formState.postalCode}
+                                error={formErrors.postalCode} required={true}
+                            />
                             <div className="sm:col-span-2 pt-6 border-t border-slate-200">
                                 <h3 className="text-lg font-medium text-slate-900">Dettagli di Pagamento</h3>
                             </div>
-                            <CustomInput label="Nome sulla Carta" name="card-name" type="text" autoComplete="cc-name" onChange={handleChange} required={true} />
-                            <CustomInput label="Numero Carta" name="card-number" type="text" autoComplete="cc-number" onChange={handleChange} placeholder="•••• •••• •••• ••••" required={true} />
-                            <CustomInput label="Data di Scadenza" name="expiration-date" type="text" autoComplete="cc-exp" onChange={handleChange} placeholder="MM/AA" required={true} />
-                            <CustomInput label="CVV" name="cvv" type="text" autoComplete="cc-csc" onChange={handleChange} placeholder="•••" required={true} />
+                            <CustomInput
+                                label="Nome sulla Carta" name="cardName" type="text"
+                                autoComplete="cc-name" onChange={handleChange}
+                                value={formState.cardName} required={true} error={formErrors.cardName}
+                            />
+                            <CustomInput
+                                label="Numero Carta" name="cardNumber" type="text"
+                                autoComplete="cc-number" onChange={handleChange}
+                                placeholder="•••• •••• •••• ••••" required={true}
+                                value={formState.cardNumber} error={formErrors.cardNumber}
+                            />
+                            <CustomInput
+                                label="Data di Scadenza" name="expirationDate" type="text"
+                                autoComplete="cc-exp" onChange={handleChange}
+                                placeholder="MM/AA" required={true}
+                                value={formState.expirationDate} error={formErrors.expirationDate}
+                            />
+                            <CustomInput
+                                label="CVV" name="cvv" type="text"
+                                autoComplete="cc-csc" onChange={handleChange}
+                                placeholder="•••" required={true}
+                                value={formState.cvv} error={formErrors.cvv}
+                            />
                         </form>
                     </div>
 
@@ -86,8 +184,8 @@ const Checkout = () => {
                         <h2 className="text-2xl font-semibold text-slate-800">Riepilogo Ordine</h2>
                         <div className="mt-4 bg-white rounded-lg shadow-sm">
                             <ul role="list" className="divide-y divide-slate-200 p-6">
-                                {cartItems.map((product) => (
-                                    <li key={product.id} className="flex items-center py-4">
+                                {items.map((product) => (
+                                    <li key={product._id} className="flex items-center py-4">
                                         <img src={product.image} alt={product.name} className="h-16 w-16 flex-shrink-0 rounded-md border border-slate-200" />
                                         <div className="ml-4 flex-1">
                                             <p className="font-medium text-slate-900">{product.name}</p>
@@ -113,48 +211,28 @@ const Checkout = () => {
                             </div>
                         </div>
                         <div className="mt-6">
-                            {/* Aggiunto attributo form per collegare il bottone al form */}
                             <CustomButton
                                 type="submit"
                                 form="checkout-form"
-                                className="w-full">
-                                <FiLock className="mr-2 h-5 w-5" />
-                                Paga ${total.toFixed(2)}
+                                className="w-full"
+                                disabled={orderLoader || items.length === 0}
+                            >
+                                {orderLoader ? (
+                                    <div className="flex items-center justify-center">
+                                        <PulseLoader color="#fff" size={8} className="mr-2" />
+                                        <span>Elaborazione...</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <FiLock className="mr-2 h-5 w-5" />
+                                        Paga ${total.toFixed(2)}
+                                    </>
+                                )}
                             </CustomButton>
                         </div>
                     </div>
                 </div>
             </main>
-
-            {/* Modale di Successo */}
-            {showSuccessModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 transition-opacity duration-300">
-                    <div className="bg-white p-8 rounded-lg shadow-xl text-center transform transition-all scale-95 opacity-0 animate-fade-in-scale">
-                        <FiCheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                        <h3 className="text-2xl font-bold text-slate-800 mb-2">Grazie!</h3>
-                        <p className="text-slate-600 mb-6">Il tuo ordine è stato inviato con successo.</p>
-                        <CustomButton
-                            onClick={() => setShowSuccessModal(false)}>
-                            Chiudi
-                        </CustomButton>
-                    </div>
-                </div>
-            )}
-            <style jsx>{`
-                @keyframes fade-in-scale {
-                    0% {
-                        opacity: 0;
-                        transform: scale(0.95);
-                    }
-                    100% {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                }
-                .animate-fade-in-scale {
-                    animation: fade-in-scale 0.3s ease-out forwards;
-                }
-            `}</style>
         </div>
     );
 };

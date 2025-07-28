@@ -1,51 +1,56 @@
-import React from 'react';
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
+// Nel tuo componente PriceRangeSlider
 
-/**
- * Un componente slider per selezionare un intervallo di prezzo.
- * @param {object} props - Le props del componente.
- * @param {number[]} [props.values=[0, 0]] - L'array con i valori correnti [min, max].
- * @param {(values: number[]) => void} props.onChange - Funzione chiamata al cambio dei valori.
- * @param {number} props.min - Il valore minimo possibile per lo slider.
- * @param {number} props.max - Il valore massimo possibile per lo slider.
- * @param {string} [props.label] - Un'etichetta opzionale.
- */
-const PriceRangeSlider = ({
-    values = [0, 0], // -> SOLUZIONE: Aggiunto un valore di default
-    onChange,
-    min,
-    max,
-    label = "Prezzo"
-}) => {
-    // Questo controllo extra garantisce che i valori non siano mai undefined.
-    const currentValues = Array.isArray(values) ? values : [min, max];
+import React, { useEffect } from 'react';
+import ReactSlider from 'react-slider';
+import './PriceRangeSlider.css';
+
+// Aggiungi onAfterChange tra le props
+const PriceRangeSlider = ({ value, onChange, onAfterChange, min, max, label = "Prezzo" }) => {
+    const displayValues = Array.isArray(value) && value.length === 2 ? value : [min, max];
+
+    useEffect(() => {
+    }, [value]);
+
+    const handleSliderChange = (newValues) => {
+        if (onChange) onChange(newValues);
+    };
+
+    // Funzione per gestire il rilascio del cursore
+    const handleSliderAfterChange = (newValues) => {
+        if (onAfterChange) onAfterChange(newValues);
+    };
+
+    const renderThumbWithLog = (props, state) => {
+        return <div {...props}></div>;
+    };
+
+    const renderTrackWithLog = (props, state) => {
+        return <div {...props} className={`example-track example-track-${state.index}`} />;
+    };
 
     return (
         <div className="w-full px-2">
             <div className="flex justify-between items-center mb-4">
                 <span className="text-sm font-semibold text-gray-800">{label}</span>
                 <span className="text-sm font-medium bg-gray-100 px-2 py-1 rounded">
-                    €{currentValues[0]} - €{currentValues[1]}
+                    €{displayValues[0].toFixed(2)} - €{displayValues[1].toFixed(2)}
                 </span>
             </div>
 
-            <Slider
-                range
-                value={currentValues}
-                onChange={onChange}
+            <ReactSlider
+                className="horizontal-slider"
+                thumbClassName="example-thumb"
+                trackClassName="example-track"
                 min={min}
                 max={max}
-                step={10}
-                allowCross={false}
-                styles={{
-                    track: { backgroundColor: '#4f46e5', height: 6 },
-                    rail: { backgroundColor: '#e5e7eb', height: 6 },
-                }}
-                handleStyle={[
-                    { borderColor: '#4f46e5', height: 20, width: 20, marginTop: -7, backgroundColor: 'white' },
-                    { borderColor: '#4f46e5', height: 20, width: 20, marginTop: -7, backgroundColor: 'white' },
-                ]}
+                step={1}
+                value={displayValues}
+                onChange={handleSliderChange} // Aggiorna lo stato locale durante il trascinamento
+                onAfterChange={handleSliderAfterChange} // Aggiorna lo stato principale al rilascio
+                pearling
+                minDistance={1}
+                renderThumb={renderThumbWithLog}
+                renderTrack={renderTrackWithLog}
             />
         </div>
     );

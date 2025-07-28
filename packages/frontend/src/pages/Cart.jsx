@@ -1,49 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { FiTrash2, FiArrowLeft } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
-// --- DATI DI ESEMPIO (In un'app reale, questi dati proverrebbero dallo stato globale o dalle props) ---
-const initialCartItems = [
-    { id: 1, name: 'Cuffie Wireless Pro', category: 'Elettronica', price: 199.99, quantity: 1, image: 'https://placehold.co/600x600/3B82F6/FFFFFF?text=Cuffie' },
-    { id: 4, name: 'Sneakers da Corsa', category: 'Sport', price: 120.00, quantity: 1, image: 'https://placehold.co/600x600/8B5CF6/FFFFFF?text=Scarpe' },
-    { id: 2, name: 'T-Shirt in Cotone', category: 'Abbigliamento', price: 29.99, quantity: 2, image: 'https://placehold.co/600x600/10B981/FFFFFF?text=T-Shirt' },
-];
+// Importa le azioni aggiornate dal tuo cartSlice
+import {
+    fetchCart,
+    removeFromCart,
+    updateQuantity,
+    clearCartAsync, // IMPORTA L'AZIONE ASINCRONA CORRETTA
+} from '@adesso/core-logic';
 
-const SHIPPING_COST = 9.99;
+// --- Dati di Configurazione ---
+const SHIPPING_COST = 2.99;
 
 // --- COMPONENTE PRINCIPALE: PAGINA CARRELLO ---
 const Cart = () => {
     const navigate = useNavigate();
-    const [cartItems, setCartItems] = useState(initialCartItems);
-    const [subtotal, setSubtotal] = useState(0);
+    const dispatch = useDispatch();
 
-    // Calcola il subtotale ogni volta che il carrello cambia
+    // Ottieni lo stato del carrello da Redux, inclusi loader ed errorMessage
+    const { items, total, loader, errorMessage } = useSelector((state) => state.cart);
+
+    // Effettua il fetch del carrello all'avvio del componente
     useEffect(() => {
-        const newSubtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        setSubtotal(newSubtotal);
-    }, [cartItems]);
+        dispatch(fetchCart());
+    }, [dispatch]);
+
+    // Calcola il subtotale. Questo ora è il `total` direttamente dallo slice.
+    const subtotal = total;
+
+    // Funzione per aggiornare la quantità di un articolo
+    const handleQuantityChange = useCallback((productId, newQuantity) => {
+        const quantityToUpdate = Math.max(0, newQuantity); // Permetti 0 per la rimozione
+
+        if (quantityToUpdate === 0) {
+            dispatch(removeFromCart(productId));
+        } else {
+            dispatch(updateQuantity({ productId, quantity: quantityToUpdate }));
+        }
+    }, [dispatch]);
+
+    // Funzione per rimuovere un articolo dal carrello
+    const handleRemoveItem = useCallback((productId) => {
+        dispatch(removeFromCart(productId));
+    }, [dispatch]);
+
+    // Funzione per svuotare l'intero carrello
+    const handleClearCart = useCallback(() => {
+        dispatch(clearCartAsync()); // USA L'AZIONE ASINCRONA QUI
+    }, [dispatch]);
 
     const handleCheckout = (e) => {
         e.preventDefault();
-        navigate('/checkout', { state: { cartItems, cartItemsCount: cartItems.length, shippingCost: SHIPPING_COST, subtotal, total: subtotal + SHIPPING_COST } });
+        navigate('/checkout', {
+            state: {
+                cartItems: items,
+                cartItemsCount: items ? items.length : 0,
+                shippingCost: SHIPPING_COST,
+                subtotal: subtotal,
+                total: subtotal + SHIPPING_COST
+            }
+        });
+    };
+
+    // --- Gestione dello stato di caricamento e errore ---
+    if (loader) {
+        return (
+            <div className="min-h-screen font-sans flex items-center justify-center">
+                <p className="text-lg text-gray-600">Caricamento del carrello...</p>
+            </div>
+        );
     }
 
-    // Funzione per aggiornare la quantità di un articolo
-    const handleQuantityChange = (id, newQuantity) => {
-        // La quantità non può essere inferiore a 1
-        const quantity = Math.max(1, newQuantity);
-        setCartItems(currentItems =>
-            currentItems.map(item =>
-                item.id === id ? { ...item, quantity } : item
-            )
+    if (errorMessage) {
+        return (
+            <div className="min-h-screen font-sans flex items-center justify-center">
+                <p className="text-lg text-red-500">Errore nel caricamento del carrello: {errorMessage}</p>
+            </div>
         );
-    };
+    }
 
-    // Funzione per rimuovere un articolo dal carrello
-    const handleRemoveItem = (id) => {
-        setCartItems(currentItems => currentItems.filter(item => item.id !== id));
-    };
+    // Se il carrello è ancora undefined o null dopo il caricamento, o non è un array
+    if (!items || !Array.isArray(items)) {
+        return (
+            <div className="min-h-screen font-sans flex items-center justify-center">
+                <p className="text-lg text-gray-500">Nessun dato del carrello disponibile.</p>
+            </div>
+        );
+    }
 
     // --- Render del componente ---
     return (
@@ -52,15 +98,15 @@ const Cart = () => {
                 <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">Il tuo Carrello</h1>
                 <p className="text-slate-500 mb-8">Controlla e completa il tuo ordine.</p>
 
-                {cartItems.length > 0 ? (
+                {items.length > 0 ? (
                     <div className="lg:grid lg:grid-cols-3 lg:gap-8 items-start">
                         {/* Colonna sinistra: Articoli del carrello */}
                         <section className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                             <ul role="list" className="divide-y divide-slate-200">
-                                {cartItems.map(item => (
-                                    <li key={item.id} className="flex py-6">
+                                {items.map(item => (
+                                    <li key={item._id} className="flex py-6">
                                         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-slate-200">
-                                            <img src={item.image} alt={item.name} className="h-full w-full object-cover object-center" />
+                                            <img src={item.image || `https://placehold.co/600x600/CCCCCC/000000?text=No+Image`} alt={item.name} className="h-full w-full object-cover object-center" />
                                         </div>
 
                                         <div className="ml-4 flex flex-1 flex-col">
@@ -74,21 +120,25 @@ const Cart = () => {
                                             <div className="flex flex-1 items-end justify-between text-sm mt-4">
                                                 {/* Selettore Quantità */}
                                                 <div className="flex items-center border border-slate-300 rounded-md">
-                                                    <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)} className="px-3 py-1 text-slate-600 hover:bg-slate-100 rounded-l-md">-</button>
-                                                    <input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value, 10))}
-                                                        className="w-12 text-center border-l border-r border-slate-300 focus:ring-0 focus:border-slate-300"
-                                                        min="1"
-                                                    />
-                                                    <button onClick={() => handleQuantityChange(item.id, item.quantity + 1)} className="px-3 py-1 text-slate-600 hover:bg-slate-100 rounded-r-md">+</button>
+                                                    <button
+                                                        onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
+                                                        className="px-3 py-1 text-slate-600 hover:bg-slate-100 rounded-l-md cursor-pointer"
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="px-2 py-1 text-slate-900">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
+                                                        className="px-3 py-1 text-slate-600 hover:bg-slate-100 rounded-r-md cursor-pointer"
+                                                    >
+                                                        +
+                                                    </button>
                                                 </div>
 
                                                 <div className="flex">
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleRemoveItem(item.id)}
+                                                        onClick={() => handleRemoveItem(item._id)}
                                                         className="font-medium text-red-600 hover:text-red-800 flex items-center gap-1"
                                                     >
                                                         <FiTrash2 />
@@ -100,6 +150,16 @@ const Cart = () => {
                                     </li>
                                 ))}
                             </ul>
+                            {items.length > 0 && (
+                                <div className="mt-6 text-right">
+                                    <button
+                                        onClick={handleClearCart} // Ora chiama la funzione che dispatcha clearCartAsync
+                                        className="text-sm font-medium text-red-600 hover:text-red-800"
+                                    >
+                                        Svuota Carrello
+                                    </button>
+                                </div>
+                            )}
                         </section>
 
                         {/* Colonna destra: Riepilogo ordine */}
@@ -151,7 +211,6 @@ const Cart = () => {
             </main>
         </div>
     );
-
 };
 
 export default Cart;

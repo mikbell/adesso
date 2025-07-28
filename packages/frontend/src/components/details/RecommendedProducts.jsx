@@ -90,7 +90,7 @@ const RecommendedProducts = ({ products }) => {
                         />
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
                         {/* Assicurati che product.rating sia un numero */}
-                        {product.rating !== undefined && <Rating rating={product.rating} />}
+                        {product.rating !== undefined && <Rating value={product.averageRating} />}
                         <SmartPrice product={product} />
                         <button className="mt-auto bg-indigo-600 text-white py-2 px-4 rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
                             Vedi Dettagli

@@ -39,14 +39,22 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
         dispatch(logout());
     };
 
+    const sidebarHeader = profile.role === "seller" ? (
+        <ProfileInfo profile={profile} handleLinkClick={handleLinkClick} />
+    ) : (
+        <h1 className='text-center font-semibold text-3xl mt-5'>
+            Admin
+        </h1>
+    );
+
     const sidebarClasses = `
-    fixed top-0 left-0 min-h-screen w-[260px] 
+    fixed top-0 left-0 min-h-screen w-[260px]
     bg-[#283046] text-white
     flex flex-col
     transition-transform duration-300 ease-in-out z-50
     ${showSidebar ? 'translate-x-0' : '-translate-x-full'}
     lg:translate-x-0 lg:static
-  `;
+`;
 
     return (
         <>
@@ -61,16 +69,12 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
             {/* Sidebar */}
             <aside className={sidebarClasses}>
 
-                {
-                    profile.role === "seller"
-                        ? <ProfileInfo profile={profile} handleLinkClick={handleLinkClick} />
-                        :
-                        <h1 className='text-center font-semibold text-3xl mt-5'>
-                            Admin
-                        </h1>
+                {/* Sidebar Header (sezione fissa in alto) */}
+                <div className="flex-shrink-0">
+                    {sidebarHeader}
+                </div>
 
-                }
-                {/* 2. Navigazione Principale */}
+                {/* Navigazione Principale (sezione scrollabile) */}
                 <nav className="flex-grow overflow-y-auto px-4 py-4">
                     <ul>
                         {allNav.map((nav) => (
@@ -82,18 +86,18 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
                             />
                         ))}
                     </ul>
-                </nav>
 
-                {/* 3. Piè di pagina (Logout) */}
-                <div className="p-4 flex-shrink-0 border-t border-gray-700/50">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200"
+                        className="w-full flex items-center gap-3 p-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200 cursor-pointer"
                     >
                         <MdLogout className="text-xl" />
                         <span className="font-medium">Logout</span>
                     </button>
-                </div>
+                </nav>
+
+
+
             </aside>
         </>
     );

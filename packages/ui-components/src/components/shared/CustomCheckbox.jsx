@@ -37,11 +37,11 @@ const CustomCheckbox = ({
                     checked={checked}
                     onChange={onChange}
                     className={clsx(
-                        "group size-6 rounded-md bg-white/10 p-1 ring-1 ring-inset",
+                        "group size-6 rounded-md shadow-xl bg-white border border-black/30 p-1",
                         "focus:not-data-focus:outline-none data-focus:outline data-focus:outline-offset-2 data-focus:outline-white",
                         "data-checked:bg-white",
                         "cursor-pointer",
-                        hasError ? 'ring-red-500' : 'ring-white/15 data-checked:ring-transparent',
+                        hasError ? 'border-red-500' : 'ring-white/15 data-checked:ring-transparent',
                         checkboxClassName
                     )}
                 >

@@ -26,7 +26,6 @@ const AddProduct = () => {
     description: '',
     price: '',
     discount: '',
-    sku: '',
     stock: '',
     category: null, // Inizializzato a null, verrà popolato dalle categorie caricate
     status: statuses.find(s => s.value === 'draft'),
@@ -60,7 +59,6 @@ const AddProduct = () => {
         description: '',
         price: '',
         discount: '',
-        sku: '',
         stock: '',
         category: categories.length > 0 ? categories[0] : null,
         status: statuses.find(s => s.value === 'draft'),
@@ -109,10 +107,8 @@ const AddProduct = () => {
     formData.append('description', productData.description);
     formData.append('price', productData.price);
     formData.append('discount', productData.discount);
-    formData.append('sku', productData.sku);
     formData.append('stock', productData.stock);
-    // Assicurati di inviare l'ID della categoria, non l'intero oggetto
-    formData.append('category', productData.category.name); // O `productData.category._id` se il backend lo richiede
+    formData.append('category', productData.category.name);
     formData.append('status', productData.status.value);
 
     // Aggiunge tutte le immagini al FormData
@@ -182,7 +178,6 @@ const AddProduct = () => {
                 <CustomInput type="number" name="price" label="Prezzo" value={productData.price} onChange={handleChange} required placeholder="0.00" step="0.01" />
                 <CustomInput type="number" name="discount" label="% Sconto" value={productData.discount} onChange={handleChange} placeholder="0" step="1" min="0" max="100" />
                 <CustomInput type="number" name="stock" label="Stock" value={productData.stock} onChange={handleChange} required placeholder="0" />
-                <CustomInput type="text" name="sku" label="SKU (Codice Prodotto)" value={productData.sku} onChange={handleChange} placeholder="SKU" />
               </div>
             </div>
 

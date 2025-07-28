@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 
@@ -11,17 +11,17 @@ import {
 import {
     getProductById,
     clearProductState,
-    getReviewsByProductId, // Importa la nuova azione per le recensioni
-    submitProductReview, // Importa la nuova azione per inviare una recensione
-    reviewSubmitReset, // Importa l'azione per resettare lo stato di invio
-    clearReviewsState // Importa l'azione per pulire lo stato delle recensioni
-} from '@adesso/core-logic'; // Assicurati che questi importi siano corretti dal tuo core-logic
+    getReviewsByProductId,
+    submitProductReview,
+    reviewSubmitReset,
+    clearReviewsState,
+    addToCart,
+} from '@adesso/core-logic';
 
 import Tabs from '../components/details/Tabs';
-import RecommendedProducts from '../components/details/RecommendedProducts'; // Correzione del nome del file
+import RecommendedProducts from '../components/details/RecommendedProducts';
 import ProductDetails from '../components/details/ProductDetails';
 
-// Considera di spostare i dati mock a un file separato o di recuperarli dinamicamente
 const mockRecommendedProducts = [
     {
         id: 'rec-1',
@@ -32,33 +32,25 @@ const mockRecommendedProducts = [
     },
     {
         id: 'rec-2',
-        name: 'Accessorio Utile',
-        price: 19.99,
+        name: 'Prodotto Simile B',
+        price: 39.99,
         imageUrl: 'https://via.placeholder.com/300x200/33FF57/FFFFFF?text=Prodotto+B',
-        rating: 3.8,
+        rating: 4.0,
     },
     {
         id: 'rec-3',
-        name: 'Articolo Correlato',
-        price: 75.00,
-        imageUrl: 'https://via.placeholder.com/300x200/3357FF/FFFFFF?text=Prodotto+C',
-        rating: 5,
-    },
-    {
-        id: 'rec-4',
-        name: 'Offerta Speciale',
-        price: 29.99,
-        imageUrl: 'https://via.placeholder.com/300x200/F4FF33/000000?text=Prodotto+D',
-        rating: 4.2,
-    },
-];
+        name: 'Prodotto Simile C',
+        price: 59.99,
+        imageUrl: 'https://via.placeholder.com/300x200/5733FF/FFFFFF?text=Prodotto+C',
+        rating: 3.8,
+    },];
 
 const Details = () => {
     const { slug } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate(); // Inizializza useNavigate per la navigazione programmatica
 
     const { product, loader, errorMessage } = useSelector(state => state.product);
-    // Seleziona lo stato delle recensioni dal nuovo reviewSlice
     const {
         reviews,
         loading: reviewsLoading,
@@ -68,48 +60,56 @@ const Details = () => {
         submitError,
     } = useSelector(state => state.review);
 
-    const { user } = useSelector(state => state.user || {}); // Presupponendo un userSlice per l'utente loggato
-
+    const { userInfo } = useSelector(state => state.auth || {});
     const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
-        // Fetch product details based on the slug
         dispatch(getProductById(slug));
-
-        // Cleanup: Clear product state and reviews state when component unmounts or slug changes
         return () => {
             dispatch(clearProductState());
-            dispatch(clearReviewsState()); // Pulisce lo stato delle recensioni
+            dispatch(clearReviewsState());
         };
     }, [slug, dispatch]);
 
-    // Fetch reviews once the product data is available (specifically product._id)
     useEffect(() => {
-        if (product?._id) { // Solo se product._id è disponibile
+        if (product?._id) {
             dispatch(getReviewsByProductId(product._id));
         }
-    }, [product?._id, dispatch]); // Dipende dall'ID del prodotto
+    }, [product?._id, dispatch]);
 
     useEffect(() => {
-        // Display error message if product fetching fails
         if (errorMessage) {
             toast.error(errorMessage);
         }
     }, [errorMessage]);
 
-    // Gestione dell'aggiunta al carrello
     const handleAddToCart = () => {
-        if (!product) {
+        if (!userInfo) {
+            toast.error("Devi essere loggato per aggiungere prodotti al carrello.");
+            navigate('/login'); // Reindirizza l'utente alla pagina di login
+            return;
+        }
+
+        if (!product || !product._id) {
             toast.error("Impossibile aggiungere il prodotto al carrello: dati non disponibili.");
             return;
         }
-        // TODO: integrazione logica reale per l'aggiunta al carrello
-        console.log(`Aggiunto al carrello: ${quantity} x ${product.name}`);
-        toast.success(`${product.name} aggiunto al carrello!`);
+
+        const productData = {
+            productId: product._id,
+            quantity: quantity,
+        };
+
+        dispatch(addToCart(productData));
     };
 
-    // Gestione dell'invio della recensione
     const handleReviewSubmit = (rating, comment) => {
+        if (!userInfo) {
+            toast.error("Devi essere loggato per inviare una recensione.");
+            navigate('/login');
+            return;
+        }
+
         if (!product?._id) {
             toast.error("Errore: ID prodotto non disponibile per l'invio della recensione.");
             return;
@@ -123,21 +123,17 @@ const Details = () => {
         }));
     };
 
-    // Effetti collaterali per l'invio della recensione (successo/errore)
     useEffect(() => {
         if (submitSuccess) {
             toast.success('Recensione inviata con successo!');
-            // Ricarica le recensioni dopo l'invio per vedere quella nuova
             dispatch(getReviewsByProductId(product._id));
-            dispatch(reviewSubmitReset()); // Resetta lo stato di invio
+            dispatch(reviewSubmitReset());
         }
         if (submitError) {
             toast.error(submitError);
             dispatch(reviewSubmitReset());
         }
     }, [submitSuccess, submitError, dispatch, product?._id]);
-
-    // --- Conditional Rendering for Loading, Error, and No Product ---
 
     if (loader) {
         return <LoadingPage />;
@@ -156,12 +152,11 @@ const Details = () => {
         );
     }
 
-    // Helper for stock status classes and text
     const stockStatusClasses = product.stock > 10
-        ? 'text-green-600' // High availability
+        ? 'text-green-600'
         : product.stock > 0
-            ? 'text-yellow-600' // Low availability
-            : 'text-red-600'; // Out of stock
+            ? 'text-yellow-600'
+            : 'text-red-600';
 
     const stockStatusText = product.stock > 0
         ? `Disponibilità: ${product.stock} in stock`
@@ -174,7 +169,7 @@ const Details = () => {
                     <Breadcrumbs product={product} />
                 </div>
 
-                {/* Product Details Section */}
+                {/* Passa l'oggetto 'userInfo' al componente ProductDetails */}
                 <ProductDetails
                     product={product}
                     stockStatusText={stockStatusText}
@@ -182,9 +177,9 @@ const Details = () => {
                     quantity={quantity}
                     setQuantity={setQuantity}
                     handleAddToCart={handleAddToCart}
+                    userInfo={userInfo} // NUOVO: Passa l'utente
                 />
 
-                {/* Tabs Section (Description, Reviews) */}
                 <Tabs
                     product={product}
                     reviews={reviews}
@@ -194,10 +189,9 @@ const Details = () => {
                     submitError={submitError}
                     submitSuccess={submitSuccess}
                     handleReviewSubmit={handleReviewSubmit}
-                    user={user} // Passa le informazioni sull'utente per la logica di recensione
+                    userInfo={userInfo}
                 />
 
-                {/* Recommended Products Section */}
                 <RecommendedProducts products={mockRecommendedProducts} />
             </div>
         </div>

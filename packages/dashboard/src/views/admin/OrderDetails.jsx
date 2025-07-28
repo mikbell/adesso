@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 
@@ -13,7 +13,6 @@ import { getOrderDetails, clearOrderDetails, clearOrderMessages } from '@adesso/
 
 const OrderDetails = () => {
     const { orderId } = useParams(); // Usiamo un nome più descrittivo
-    const navigate = useNavigate();
     const dispatch = useDispatch();
 
     // Legge i dati e lo stato dallo store Redux
@@ -48,9 +47,9 @@ const OrderDetails = () => {
         return (
             <div className="text-center py-20">
                 <h2 className="text-2xl font-bold text-red-500">{errorMessage}</h2>
-                <CustomButton onClick={() => navigate('/admin/dashboard/orders')} className='mt-4'>
+                <Link to="/admin/dashboard/orders" className="mt-4">
                     Torna agli Ordini
-                </CustomButton>
+                </Link>
             </div>
         );
     }
@@ -59,9 +58,9 @@ const OrderDetails = () => {
         <div className="p-4 md:p-6 space-y-6">
             <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                    <CustomButton to="/admin/dashboard/orders" variant="link" className="text-sm flex items-center gap-2">
+                    <Link to="/admin/dashboard/orders" className="text-sm flex items-center gap-2">
                         <FiArrowLeft /><span>Torna agli ordini</span>
-                    </CustomButton>
+                    </Link>
                     <div className='flex items-center gap-4 mt-2'>
                         <h1 className="text-3xl font-bold text-gray-800">Ordine #{order.orderId}</h1>
                         <StatusBadge status={order.status} />
@@ -69,7 +68,7 @@ const OrderDetails = () => {
                     <p className="text-gray-500 text-sm mt-1">Data: {new Date(order.createdAt).toLocaleDateString('it-IT')}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <CustomButton variant="secondary" icon={<FiPrinter />}>Stampa</CustomButton>
+                    <CustomButton variant="secondary" icon={FiPrinter}>Stampa</CustomButton>
                 </div>
             </header>
 
@@ -79,14 +78,16 @@ const OrderDetails = () => {
                     {order.history && <OrderTimeline history={order.history} />}
                 </div>
                 <div className="space-y-6">
-                    <InfoCard title="Cliente" icon={<FiUser />}>
+                    <InfoCard title="Cliente" icon={FiUser}>
                         <p className="font-semibold text-gray-800">{order.customerName}</p>
                         {order.customerId?.email && <p className="text-sm text-gray-500">{order.customerId.email}</p>}
                     </InfoCard>
-                    <InfoCard title="Indirizzo di Spedizione" icon={<FiTruck />}>
-                        <p className="text-sm text-gray-600 whitespace-pre-line">{order.shippingAddress}</p>
+                    <InfoCard title="Indirizzo di Spedizione" icon={FiTruck}>
+                        <p className="text-sm text-gray-600">
+                            {order.shippingAddress.address}<br />
+                            {order.shippingAddress.city}, {order.shippingAddress.postalCode}
+                        </p>
                     </InfoCard>
-                    {/* Aggiungi qui altre InfoCard se necessario, es. per il pagamento */}
                 </div>
             </div>
         </div>

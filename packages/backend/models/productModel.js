@@ -2,6 +2,12 @@ import { Schema, model } from "mongoose";
 
 const productSchema = new Schema(
 	{
+		seller: {
+			type: Schema.Types.ObjectId,
+			ref: "User",
+			required: true,
+		},
+		
 		name: {
 			type: String,
 			required: [true, "Il nome del prodotto è obbligatorio."],

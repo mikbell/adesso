@@ -18,7 +18,11 @@ const Home = () => {
                 <h2 className="text-3xl font-bold text-center text-slate-800 mb-8">
                     Ultimi Arrivi
                 </h2>
-                <Products />
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <Products type="latest" limit={9} customTitle='Ultimi Arrivi'/>
+                    <Products type="discounted" limit={9} customTitle='Prodotti in Sconto'/>
+                    <Products type="topRated" limit={9} minReviews={5} customTitle='Prodotti Popolari'/>
+                </div>
             </div>
         </div>
     );

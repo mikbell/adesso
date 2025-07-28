@@ -5,7 +5,7 @@ import {
     ProductImageGallery,
     SmartPrice,
     QuantitySelector,
-    Rating // Importa Rating se usato qui
+    Rating
 } from '@adesso/ui-components';
 
 import { FiShoppingCart, FiHeart } from 'react-icons/fi';
@@ -14,11 +14,12 @@ const ProductDetails = ({
     product,
     stockStatusText,
     stockStatusClasses,
-    quantity,
-    setQuantity,
-    handleAddToCart,
+    quantity, // NUOVO: La quantità viene passata dal genitore
+    setQuantity, // NUOVO: La funzione per aggiornare la quantità viene passata dal genitore
+    handleAddToCart, // NUOVO: La funzione per l'aggiunta al carrello viene passata dal genitore
+    userInfo // NUOVO: L'utente viene passato dal genitore
 }) => {
-    if (!product) return null; // Dovrebbe essere gestito dal componente padre, ma per sicurezza
+    if (!product) return null;
 
     return (
         <div className="bg-white rounded-xl shadow-lg p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-8">
@@ -43,7 +44,7 @@ const ProductDetails = ({
                     )}
 
                     <div className="flex items-center mt-3 gap-2">
-                        <Rating value={product.rating} />
+                        <Rating value={product.averageRating} />
                         <span className="text-gray-600 text-sm">({product.numReviews} recensioni)</span>
                     </div>
                     <p className={`mt-2 font-medium ${stockStatusClasses}`}>
@@ -54,9 +55,6 @@ const ProductDetails = ({
                 <div className="mb-6 pb-6 border-b border-gray-200">
                     <SmartPrice product={product} size="xl" className="font-bold text-gray-900" />
                 </div>
-
-                {/* NOTA: la descrizione è stata spostata nel componente Tabs/ProductDescription */}
-                {/* <p className="text-gray-700 leading-relaxed mb-8">{product.description}</p> */}
 
                 <div className="mt-auto pt-6 border-t border-gray-200">
                     <div className="flex items-center gap-6 mb-6">
@@ -71,25 +69,49 @@ const ProductDetails = ({
                         />
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <CustomButton
-                            onClick={handleAddToCart}
-                            size="lg"
-                            className="w-full py-3 text-lg"
-                            icon={FiShoppingCart}
-                            disabled={product.stock === 0}
-                        >
-                            Aggiungi al Carrello
-                        </CustomButton>
-                        <CustomButton
-                            variant="outline"
-                            size="lg"
-                            className="w-full py-3 text-lg"
-                            icon={FiHeart}
-                        >
-                            Aggiungi alla Wishlist
-                        </CustomButton>
-                    </div>
+                    {/* Condizione per mostrare il bottone */}
+                    {userInfo ? (
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <CustomButton
+                                onClick={handleAddToCart}
+                                size="lg"
+                                className="w-full py-3 text-lg"
+                                icon={FiShoppingCart}
+                                disabled={product.stock === 0}
+                            >
+                                Aggiungi al Carrello
+                            </CustomButton>
+
+                            <CustomButton
+                                variant="outline"
+                                size="lg"
+                                className="w-full py-3 text-lg"
+                                icon={FiHeart}
+                            >
+                                Aggiungi alla Wishlist
+                            </CustomButton>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <CustomButton
+                                to="/login"
+                                variant="primary"
+                                className="w-full py-3 text-lg"
+                                disabled={product.stock === 0}
+                            >
+                                Aggiungi al Carrello
+                            </CustomButton>
+
+                            <CustomButton
+                                to="/login"
+                                variant="outline"
+                                className="w-full py-3 text-lg"
+                                icon={FiHeart}
+                            >
+                                Aggiungi alla Wishlist
+                            </CustomButton>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

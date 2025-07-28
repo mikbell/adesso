@@ -62,7 +62,6 @@ export const addCategory = async (req, res) => {
  * @description Ottiene le categorie con paginazione e ricerca.
  */
 export const getCategories = async (req, res) => {
-	// ... (questa funzione è già corretta) ...
 	const { page = 1, perPage = 10, search = "" } = req.query;
 
 	try {
@@ -77,7 +76,7 @@ export const getCategories = async (req, res) => {
 		const categories = await Category.find(searchQuery)
 			.skip(skip)
 			.limit(limit)
-			.sort({ createdAt: -1 });
+			.sort({ name: 1 }); // Modifica qui per l'ordinamento alfabetico
 
 		const totalCategories = await Category.countDocuments(searchQuery);
 

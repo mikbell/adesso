@@ -1,0 +1,66 @@
+/* PriceRangeSlider.css */
+
+/* Stile per il contenitore principale dello slider */
+.horizontal-slider {
+    width: 100%;
+    height: 24px;
+    /* Stessa altezza dei thumb per allineamento */
+    display: flex;
+    align-items: center;
+    position: relative;
+    /* Necessario per posizionare i track e i thumb */
+}
+
+/* Stile per i "maniglioni" (thumb) */
+.example-thumb {
+    height: 24px;
+    width: 24px;
+    background-color: white;
+    border: 2px solid #2563eb;
+    /* Colore del bordo (blu) */
+    border-radius: 50%;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    /* Rimuove il bordo di focus di default */
+    transform: translateY(-50%);
+    /* Centra verticalmente rispetto alla traccia */
+    position: absolute;
+    /* Permette il posizionamento esatto */
+    top: 50%;
+    /* Allinea al centro della traccia */
+}
+
+/* Stile quando il thumb è attivo (cliccato/trascinato) */
+.example-thumb:active {
+    cursor: grabbing;
+}
+
+/* Stile per le "tracce" (track) */
+.example-track {
+    height: 6px;
+    /* Altezza della traccia */
+    border-radius: 3px;
+    position: absolute;
+    /* Permette il posizionamento esatto */
+    top: 50%;
+    /* Allinea al centro verticale del slider container */
+    transform: translateY(-50%);
+    /* Centra verticalmente */
+}
+
+/* Stile per la traccia non riempita (a sinistra e a destra) */
+.example-track-0,
+.example-track-2 {
+    background-color: #d1d5db;
+    /* Colore del rail (grigio) */
+}
+
+/* Stile per la traccia riempita (centrale) */
+.example-track-1 {
+    background-color: #2563eb;
+    /* Colore del track (blu) */
+}

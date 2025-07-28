@@ -22,13 +22,10 @@ export const getProducts = createAsyncThunk(
 		{ rejectWithValue }
 	) => {
 		try {
-			// Costruisce l'URL con i parametri di query per la richiesta
-			// Assicurati che il tuo backend sia in grado di leggere e processare questi parametri
 			const params = new URLSearchParams();
 			params.append("page", page);
 			params.append("perPage", perPage);
 			if (search) params.append("search", search);
-			// Se 'Tutte' è selezionato o nessun'altra categoria, non inviare il parametro category
 			if (
 				categories.length > 0 &&
 				!(categories.length === 1 && categories[0] === "Tutte")
@@ -42,10 +39,8 @@ export const getProducts = createAsyncThunk(
 
 			const url = `/products/get?${params.toString()}`;
 			const { data } = await api.get(url);
-			// Restituisce i dati ricevuti (dovrebbero includere products e totalProducts)
 			return data;
 		} catch (error) {
-			// In caso di errore, restituisce un messaggio di errore
 			return rejectWithValue(
 				error.response?.data?.error || "Errore nel caricamento dei prodotti"
 			);
@@ -131,14 +126,87 @@ export const deleteProduct = createAsyncThunk(
 	}
 );
 
+// --- NUOVI THUNKS PER LA HOMEPAGE ---
+
+/**
+ * Thunk per ottenere i prodotti più recenti.
+ * Fa una chiamata GET all'endpoint /products/latest.
+ */
+export const getLatestProducts = createAsyncThunk(
+	"products/getLatestProducts",
+	async (limit, { rejectWithValue }) => {
+		try {
+			const url = limit
+				? `/products/latest?limit=${limit}`
+				: `/products/latest`;
+			const { data } = await api.get(url);
+			return data; // Si aspetta { products: [...] }
+		} catch (error) {
+			return rejectWithValue(
+				error.response?.data?.error ||
+					"Errore nel caricamento dei prodotti più recenti"
+			);
+		}
+	}
+);
+
+/**
+ * Thunk per ottenere i prodotti in sconto.
+ * Fa una chiamata GET all'endpoint /products/discounted.
+ */
+export const getDiscountedProducts = createAsyncThunk(
+	"products/getDiscountedProducts",
+	async (limit, { rejectWithValue }) => {
+		try {
+			const url = limit
+				? `/products/discounted?limit=${limit}`
+				: `/products/discounted`;
+			const { data } = await api.get(url);
+			return data; // Si aspetta { products: [...] }
+		} catch (error) {
+			return rejectWithValue(
+				error.response?.data?.error ||
+					"Errore nel caricamento dei prodotti in sconto"
+			);
+		}
+	}
+);
+
+/**
+ * Thunk per ottenere i prodotti più votati.
+ * Fa una chiamata GET all'endpoint /products/top-rated.
+ */
+export const getTopRatedProducts = createAsyncThunk(
+	"products/getTopRatedProducts",
+	async ({ limit, minReviews } = {}, { rejectWithValue }) => {
+		try {
+			const params = new URLSearchParams();
+			if (limit) params.append("limit", limit);
+			if (minReviews) params.append("minReviews", minReviews);
+
+			const url = `/products/top-rated?${params.toString()}`;
+			const { data } = await api.get(url);
+			return data; // Si aspetta { products: [...] }
+		} catch (error) {
+			return rejectWithValue(
+				error.response?.data?.error ||
+					"Errore nel caricamento dei prodotti più votati"
+			);
+		}
+	}
+);
+
 // Definisce lo stato iniziale per i prodotti
 const initialState = {
 	loader: false,
 	successMessage: "",
 	errorMessage: "",
-	products: [], // Qui verranno memorizzati i prodotti filtrati/paginati
+	products: [], // Qui verranno memorizzati i prodotti filtrati/paginati (per la pagina catalogo)
 	product: null,
 	totalProducts: 0, // Qui verrà memorizzato il conteggio totale dei prodotti (per la paginazione)
+	latestProducts: [], // Nuovo stato per i prodotti più recenti della homepage
+	discountedProducts: [], // Nuovo stato per i prodotti in sconto della homepage
+	topRatedProducts: [], // Nuovo stato per i prodotti più votati della homepage
 };
 
 const productSlice = createSlice({
@@ -169,8 +237,6 @@ const productSlice = createSlice({
 				// Non aggiungiamo qui il prodotto alla lista 'products'
 				// perché la lista è gestita dal fetching con filtri e paginazione.
 				// Una nuova chiamata a getProducts aggiornerà la lista.
-				// state.products = [payload.product, ...state.products]; // Rimuovi o commenta questa riga
-				// state.totalProducts += 1; // Rimuovi o commenta questa riga
 			})
 			.addCase(updateProduct.fulfilled, (state, { payload }) => {
 				state.successMessage = payload.message;
@@ -185,6 +251,17 @@ const productSlice = createSlice({
 					(product) => product.slug !== payload.deletedSlug
 				);
 				state.totalProducts -= 1;
+			})
+
+			// --- GESTIONE DEI NUOVI THUNKS PER LA HOMEPAGE ---
+			.addCase(getLatestProducts.fulfilled, (state, { payload }) => {
+				state.latestProducts = payload.products;
+			})
+			.addCase(getDiscountedProducts.fulfilled, (state, { payload }) => {
+				state.discountedProducts = payload.products;
+			})
+			.addCase(getTopRatedProducts.fulfilled, (state, { payload }) => {
+				state.topRatedProducts = payload.products;
 			})
 
 			// --- GESTIONE GENERICA CON ADDMATCHER ---

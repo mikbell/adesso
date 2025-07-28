@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "dependencies": {
-    "axios": "^1.7.2",
-    "jwt-decode": "^4.0.0"
+    "@reduxjs/toolkit": "^2.8.2",
+    "axios": "^1.11.0",
+    "jwt-decode": "^4.0.0",
+    "react-redux": "^9.2.0"
   },
   "peerDependencies": {
     "@reduxjs/toolkit": "^2.2.5",

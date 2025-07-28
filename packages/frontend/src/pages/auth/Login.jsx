@@ -15,7 +15,6 @@ const validateLogin = (data) => {
 const Login = () => {
   const { formData, errors, loader, handleChange, handleSubmit } = useAuthForm({
     initialState: { email: '', password: '' },
-    // MODIFICA QUI: Aggiungi userType: 'customer' per il login del cliente
     authAction: (data) => login({ ...data, userType: 'customer' }), // <-- Passa userType
     validationRules: validateLogin,
     successRedirectPath: '/',
